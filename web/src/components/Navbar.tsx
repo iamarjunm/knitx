@@ -57,7 +57,7 @@ export default function Navbar() {
   const showCartCount = mounted ? cartCount : 0;
   const showUser = mounted ? user : null;
 
-  if (pathname.startsWith("/v2")) {
+  if (pathname.startsWith("/v2") || pathname.startsWith("/v3")) {
     return null;
   }
 
@@ -117,6 +117,7 @@ export default function Navbar() {
           {/* Right: Bag + Auth + Fullscreen Index Trigger */}
           <div className="pointer-events-auto flex items-center gap-2">
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => setCartOpen(true)}
               aria-label="Open Bag"
@@ -136,6 +137,7 @@ export default function Navbar() {
 
             {showUser ? (
               <button
+                suppressHydrationWarning
                 type="button"
                 onClick={() => logout()}
                 title={`Signed in as ${showUser.displayName} — click to sign out`}
@@ -148,6 +150,7 @@ export default function Navbar() {
               </button>
             ) : (
               <button
+                suppressHydrationWarning
                 type="button"
                 onClick={() => setAuthModalOpen(true)}
                 className="hidden cursor-pointer items-center gap-1.5 border-2 border-ink bg-paper/95 px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-wider text-ink backdrop-blur-md transition-colors hover:bg-ink hover:text-paper sm:inline-flex"
@@ -158,6 +161,7 @@ export default function Navbar() {
             )}
 
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Toggle Fullscreen Index Menu"

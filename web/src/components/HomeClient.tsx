@@ -967,6 +967,7 @@ export default function HomeClient({
                 const active = dropTab === tab.id;
                 return (
                   <button
+                    suppressHydrationWarning
                     key={tab.id}
                     type="button"
                     onClick={() => setDropTab(tab.id)}
@@ -1360,6 +1361,7 @@ export default function HomeClient({
                   className="mt-3 flex flex-col gap-2.5 sm:flex-row"
                 >
                   <input
+                    suppressHydrationWarning
                     type="text"
                     value={accessCodeInput}
                     onChange={(e) => {
@@ -1370,6 +1372,7 @@ export default function HomeClient({
                     className="flex-1 border-2 border-ink bg-paper px-4 py-3 font-mono text-xs font-bold tracking-[0.14em] text-ink uppercase placeholder:text-muted/60 focus:bg-surface focus:outline-none"
                   />
                   <motion.button
+                    suppressHydrationWarning
                     type="submit"
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.97 }}
@@ -1438,6 +1441,7 @@ export default function HomeClient({
                             YOUR NAME
                           </label>
                           <input
+                            suppressHydrationWarning
                             id="knitx-waitlist-name"
                             type="text"
                             value={waitlistName}
@@ -1456,6 +1460,7 @@ export default function HomeClient({
                             YOUR EMAIL
                           </label>
                           <input
+                            suppressHydrationWarning
                             id="knitx-waitlist-email"
                             type="email"
                             value={waitlistEmail}
@@ -1474,6 +1479,7 @@ export default function HomeClient({
                         )}
 
                         <motion.button
+                          suppressHydrationWarning
                           type="submit"
                           disabled={waitlistSubmitting}
                           whileHover={{ y: -2, x: -2 }}
@@ -1577,6 +1583,7 @@ export default function HomeClient({
 
                     return (
                       <motion.button
+                        suppressHydrationWarning
                         key={candidate._id}
                         type="button"
                         disabled={hasVoted}
@@ -1708,6 +1715,7 @@ export default function HomeClient({
                 <div className="flex flex-wrap items-center gap-3">
                   {matchups.length > 1 && (
                     <motion.button
+                      suppressHydrationWarning
                       type="button"
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.97 }}
