@@ -57,6 +57,10 @@ export default function Navbar() {
   const showCartCount = mounted ? cartCount : 0;
   const showUser = mounted ? user : null;
 
+  if (pathname.startsWith("/v2")) {
+    return null;
+  }
+
   return (
     <>
       {/* TOP FLOATING CORNER CHROME — ZERO CLUTTER, PURE STREETWEAR ATTITUDE */}

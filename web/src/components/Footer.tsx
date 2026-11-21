@@ -2,9 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/v2")) {
+    return null;
+  }
   return (
     <footer className="border-t-2 border-ink bg-surface text-ink">
       {/* Kinetic Closing Tape */}

@@ -1,6 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Anton, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import {
+  Anton,
+  Instrument_Serif,
+  JetBrains_Mono,
+  Space_Grotesk,
+  Syne,
+} from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { VaultProvider } from "@/context/VaultContext";
@@ -9,11 +15,27 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import VaultBagDrawer from "@/components/VaultBagDrawer";
+import VersionSwitcher from "@/components/VersionSwitcher";
 
 const anton = Anton({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-anton",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-syne",
   display: "swap",
 });
 
@@ -59,7 +81,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${anton.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${anton.variable} ${instrumentSerif.variable} ${syne.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <body
         suppressHydrationWarning
@@ -74,6 +96,7 @@ export default function RootLayout({
             <Navbar />
             <main className="relative min-h-screen pb-24 md:pb-0">{children}</main>
             <Footer />
+            <VersionSwitcher />
             <AuthModal />
             <VaultBagDrawer />
             <SanityLive />

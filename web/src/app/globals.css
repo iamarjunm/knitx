@@ -4,6 +4,8 @@
   --font-poster: var(--font-anton), "Anton", Impact, sans-serif;
   --font-serif: var(--font-anton), "Anton", Impact, sans-serif;
   --font-display: var(--font-anton), "Anton", Impact, sans-serif;
+  --font-editorial: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  --font-syne: var(--font-syne), "Syne", sans-serif;
   --font-sans: var(--font-space-grotesk), "Space Grotesk", system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
 
@@ -16,6 +18,10 @@
   --color-vermilion: #FF4500;
   --color-orange: #FF4500;
   --color-cobalt: #0047FF;
+  --color-porcelain: #FBFBF9;
+  --color-linen: #F1EFEA;
+  --color-klein: #002BFF;
+  --color-archive-red: #E11D2E;
 }
 
 :root {
