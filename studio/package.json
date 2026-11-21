@@ -1,0 +1,32 @@
+{
+  "name": "knitx-studio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Standalone Sanity v3 Studio for KNITX streetwear drop platform",
+  "main": "package.json",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy:schema": "sanity schema deploy",
+    "typegen": "sanity schema extract && sanity typegen generate",
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@sanity/client": "^6.24.0",
+    "@sanity/icons": "^3.5.0",
+    "@sanity/vision": "^3.68.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.68.0",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

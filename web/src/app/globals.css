@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-poster: var(--font-anton), "Anton", Impact, sans-serif;
+  --font-serif: var(--font-anton), "Anton", Impact, sans-serif;
+  --font-display: var(--font-anton), "Anton", Impact, sans-serif;
+  --font-sans: var(--font-space-grotesk), "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  --color-paper: #F7F6F2;
+  --color-surface: #FFFFFF;
+  --color-stone: #EBE9E1;
+  --color-ink: #0A0A0A;
+  --color-muted: #5C5A54;
+  --color-hairline: #D8D5CC;
+  --color-vermilion: #FF4500;
+  --color-orange: #FF4500;
+  --color-cobalt: #0047FF;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #F7F6F2;
+  color: #0A0A0A;
+}
+
+body {
+  background-color: #F7F6F2;
+  color: #0A0A0A;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #FF4500;
+  color: #FFFFFF;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7F6F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF4500;
+}
+
+/* Kinetic Tape Marquee */
+@keyframes tape-scroll-left {
+  0% {
+    transform: translate3d(0%, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes tape-scroll-right {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0, 0);
+  }
+}
+
+.animate-tape-left {
+  display: flex;
+  width: max-content;
+  animation: tape-scroll-left 22s linear infinite;
+}
+
+.animate-tape-right {
+  display: flex;
+  width: max-content;
+  animation: tape-scroll-right 26s linear infinite;
+}
+
+.animate-tape-left:hover,
+.animate-tape-right:hover {
+  animation-play-state: paused;
+}
+
+/* Subtle Architectural Draft Grid on Light Paper */
+.bg-draft-grid {
+  background-image:
+    linear-gradient(to right, rgba(10, 10, 10, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(10, 10, 10, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Tactile Streetwear Stamp Shadow */
+.stamp-shadow {
+  box-shadow: 4px 4px 0px #0A0A0A;
+}
+
+.stamp-shadow-sm {
+  box-shadow: 2.5px 2.5px 0px #0A0A0A;
+}
+
+.stamp-shadow-orange {
+  box-shadow: 4px 4px 0px #FF4500;
+}
+
+/* Thermal Ticket Zig-Zag Perforation */
+.ticket-perforated {
+  background-image: radial-gradient(circle at 12px 0, #F7F6F2 6px, transparent 6.5px);
+  background-size: 24px 12px;
+  background-repeat: repeat-x;
+}

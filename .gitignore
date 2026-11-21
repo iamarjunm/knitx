@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js & Sanity build outputs
+web/.next/
+web/out/
+studio/dist/
+studio/.sanity/
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+studio/.env
+studio/.env.local
+web/.env
+web/.env.local
+!.env.example
+!.env.local.example
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+.vercel
