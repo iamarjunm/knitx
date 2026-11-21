@@ -65,7 +65,23 @@ export async function POST(request: Request) {
           }
         }
 
-        const created = await writeClient.create({
+        const doc: {
+          _type: "creatorSubmission";
+          title: string;
+          creatorName: string;
+          creatorHandle: string;
+          email: string;
+          category: string;
+          craftsmanshipNotes: string;
+          mockupImage?: {
+            _type: "image";
+            asset: { _type: "reference"; _ref: string };
+            alt: string;
+          };
+          imageUrl?: string;
+          createdAt: string;
+          status: "pending";
+        } = {
           _type: "creatorSubmission",
           title,
           creatorName,
@@ -73,10 +89,17 @@ export async function POST(request: Request) {
           email: email || "creator@knitx.in",
           category,
           craftsmanshipNotes,
-          ...(mockupImage ? { mockupImage } : { imageUrl }),
           createdAt,
           status: "pending",
-        });
+        };
+
+        if (mockupImage) {
+          doc.mockupImage = mockupImage;
+        } else {
+          doc.imageUrl = imageUrl;
+        }
+
+        const created = await writeClient.create(doc);
         if (created?._id) {
           submissionId = created._id;
           persisted = true;
