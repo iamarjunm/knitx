@@ -5,15 +5,15 @@
   "description": "KNITX — Ultra-exclusive Indian streetwear drop platform (Next.js Web + Standalone Sanity v3 Studio)",
   "scripts": {
     "sync:assets": "node scripts/sync-assets.mjs",
-    "install:all": "node scripts/sync-assets.mjs && npm --prefix studio install && npm --prefix web install",
-    "dev:studio": "npm --prefix studio run dev",
-    "dev:web": "npm --prefix web run dev",
-    "build:studio": "npm --prefix studio run build",
-    "build:web": "npm --prefix web run build",
-    "seed:studio": "npm --prefix studio run seed",
-    "deploy:schema": "npm --prefix studio run deploy:schema",
+    "install:all": "node scripts/sync-assets.mjs && pnpm --dir studio install && pnpm --dir web install",
+    "dev:studio": "pnpm --dir studio dev",
+    "dev:web": "pnpm --dir web dev",
+    "build:studio": "pnpm --dir studio build",
+    "build:web": "pnpm --dir web build",
+    "seed:studio": "pnpm --dir studio seed",
+    "deploy:schema": "pnpm --dir studio deploy:schema",
     "publish:sanity": "node studio/scripts/publish-sanity.mjs",
-    "deploy:studio": "npm --prefix studio run deploy"
+    "deploy:studio": "pnpm --dir studio deploy"
   },
   "engines": {
     "node": ">=18.17.0"

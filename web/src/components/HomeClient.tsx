@@ -1341,7 +1341,7 @@ export default function HomeClient({
                     className="border-2 border-ink bg-paper p-3.5"
                   >
                     <span className="font-mono text-[10px] font-bold text-orange">
-                      {item.step} //
+                      {item.step} {"//"}
                     </span>
                     <p className="mt-1 font-mono text-[11px] font-bold leading-snug tracking-[0.08em] text-ink uppercase">
                       {item.text}
@@ -1601,7 +1601,7 @@ export default function HomeClient({
 
                           {/* Contender Corner Tag */}
                           <span className="absolute top-3.5 left-3.5 border-2 border-ink bg-surface px-2.5 py-1 font-mono text-[10px] font-bold tracking-[0.14em] text-ink uppercase stamp-shadow-sm">
-                            {candidate.code} //{" "}
+                            {candidate.code} {"//"}{" "}
                             {candidate.tierSuggestion === "one-of-one"
                               ? "1-OF-1"
                               : "SMALL-BATCH"}
@@ -1812,7 +1812,7 @@ export default function HomeClient({
                         step.accent
                       )}
                     >
-                      STEP {step.num} // {step.tag}
+                      STEP {step.num} {"//"} {step.tag}
                     </span>
                     <span className="font-mono text-[10px] font-bold tracking-[0.16em] text-cobalt uppercase">
                       {step.spec}

@@ -54,9 +54,9 @@ function run(cmd, args, cwd, label) {
 run('node', ['scripts/sync-assets.mjs'], monorepoRoot, 'Syncing generated KNITX visuals')
 
 // 2. Deploy all 7 schemas to Sanity project ti0l507p
-run('npx', ['sanity', 'schema', 'deploy'], studioRoot, 'Publishing Sanity schemas (ti0l507p)')
+run('pnpm', ['exec', 'sanity', 'schema', 'deploy'], studioRoot, 'Publishing Sanity schemas (ti0l507p)')
 
 // 3. Seed Drop 001, 10 products, 6 vote candidates, 3 submissions, siteSettings + CDN assets
-run('npx', ['tsx', 'scripts/seed.ts'], studioRoot, 'Uploading CDN assets & seeding production dataset')
+run('pnpm', ['exec', 'tsx', 'scripts/seed.ts'], studioRoot, 'Uploading CDN assets & seeding production dataset')
 
 console.log('\n[KNITX PUBLISH] All schemas published and production dataset seeded cleanly!\n')

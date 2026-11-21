@@ -308,7 +308,7 @@ export default function AtelierClient() {
               >
                 <div className="lg:col-span-7">
                   <span className="font-mono text-[11px] font-bold tracking-[0.22em] text-orange uppercase">
-                    STAGE {activeStep.num} // {activeStep.label}
+                    STAGE {activeStep.num} {"//"} {activeStep.label}
                   </span>
                   <h3 className="mt-2 font-poster text-4xl leading-[0.94] tracking-tight text-ink uppercase sm:text-5xl">
                     {activeStep.headline}

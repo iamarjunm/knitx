@@ -345,7 +345,7 @@ export default function SubmitClient({
 
                   <div>
                     <p className="font-mono text-[11px] font-bold tracking-[0.2em] text-cobalt uppercase">
-                      DOCKET {receipt.docketCode} // LOGGED IN STUDIO
+                      DOCKET {receipt.docketCode} {"//"} LOGGED IN STUDIO
                     </p>
                     <h3 className="mt-1 font-poster text-3xl leading-none text-ink uppercase">
                       {receipt.item.title}
