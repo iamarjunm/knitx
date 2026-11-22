@@ -57,7 +57,12 @@ export default function Navbar() {
   const showCartCount = mounted ? cartCount : 0;
   const showUser = mounted ? user : null;
 
-  if (pathname.startsWith("/v2") || pathname.startsWith("/v3")) {
+  if (
+    pathname.startsWith("/v2") ||
+    pathname.startsWith("/v3") ||
+    pathname.startsWith("/v4") ||
+    pathname.startsWith("/v5")
+  ) {
     return null;
   }
 

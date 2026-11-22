@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#0A0A0A"/>
+  <rect x="3" y="3" width="58" height="58" rx="9" stroke="#F7F6F2" stroke-opacity="0.16" stroke-width="1.5"/>
+  <!-- Architectural K -->
+  <path d="M14 16H21.5V29.5L32.5 16H41.5L29 31.2L42.5 48H33L23.2 35.4L21.5 37.4V48H14V16Z" fill="#F7F6F2"/>
+  <!-- Blade X Slash -->
+  <path d="M40.5 16H49.5L43.2 31.8L51 48H42.2L37.8 38.2L40.5 16Z" fill="#F7F6F2" fill-opacity="0.9"/>
+  <!-- Signature Edition Dot -->
+  <circle cx="51" cy="17" r="4.5" fill="#FF4500"/>
+</svg>

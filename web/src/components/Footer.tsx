@@ -7,7 +7,12 @@ import { ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith("/v2") || pathname.startsWith("/v3")) {
+  if (
+    pathname.startsWith("/v2") ||
+    pathname.startsWith("/v3") ||
+    pathname.startsWith("/v4") ||
+    pathname.startsWith("/v5")
+  ) {
     return null;
   }
   return (
