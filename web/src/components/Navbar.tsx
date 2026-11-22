@@ -61,7 +61,9 @@ export default function Navbar() {
     pathname.startsWith("/v2") ||
     pathname.startsWith("/v3") ||
     pathname.startsWith("/v4") ||
-    pathname.startsWith("/v5")
+    pathname.startsWith("/v5") ||
+    pathname.startsWith("/v6") ||
+    pathname.startsWith("/v7")
   ) {
     return null;
   }
