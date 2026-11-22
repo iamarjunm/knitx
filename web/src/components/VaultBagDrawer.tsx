@@ -93,11 +93,15 @@ function resolveStudioImage(url: string, tier: ProductTier): string {
 
 export default function VaultBagDrawer() {
   const pathname = usePathname();
-  const releaseHref = pathname.startsWith("/v10")
-    ? "/v10/release"
-    : pathname.startsWith("/v9")
-      ? "/v9/vault"
-      : "/vault";
+  const releaseHref = pathname.startsWith("/v12")
+    ? "/v12/release"
+    : pathname.startsWith("/v11")
+      ? "/v11/release"
+      : pathname.startsWith("/v10")
+        ? "/v10/release"
+        : pathname.startsWith("/v9")
+          ? "/v9/vault"
+          : "/vault";
   const { user } = useAuth();
   const {
     cart,
