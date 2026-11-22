@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActiveVersion = "v1" | "v2" | "v3" | "v4" | "v5" | "v6" | "v7";
+type ActiveVersion = "v1" | "v2" | "v3" | "v4" | "v5" | "v6" | "v7" | "v8" | "v9";
 
 const VERSIONS: {
   id: ActiveVersion;
@@ -24,28 +24,34 @@ const VERSIONS: {
   { id: "v5", href: "/v5", label: "V5", title: "V5 Gallery", activeBg: "bg-terracotta", activeText: "text-white" },
   { id: "v6", href: "/v6", label: "V6", title: "V6 Swiss Clean", activeBg: "bg-[#1A4BFF]", activeText: "text-white" },
   { id: "v7", href: "/v7", label: "V7", title: "V7 Warm Atelier", activeBg: "bg-[#254336]", activeText: "text-white" },
+  { id: "v8", href: "/v8", label: "V8", title: "V8 V1×V2 Fusion", activeBg: "bg-[#FF4500]", activeText: "text-white" },
+  { id: "v9", href: "/v9", label: "V9", title: "V9 V1×V5 Fusion", activeBg: "bg-[#D9381E]", activeText: "text-white" },
 ];
 
 export default function VersionSwitcher() {
   const pathname = usePathname();
-  const activeVersion: ActiveVersion = pathname.startsWith("/v7")
-    ? "v7"
-    : pathname.startsWith("/v6")
-      ? "v6"
-      : pathname.startsWith("/v5")
-        ? "v5"
-        : pathname.startsWith("/v4")
-          ? "v4"
-          : pathname.startsWith("/v3")
-            ? "v3"
-            : pathname.startsWith("/v2")
-              ? "v2"
-              : "v1";
+  const activeVersion: ActiveVersion = pathname.startsWith("/v9")
+    ? "v9"
+    : pathname.startsWith("/v8")
+      ? "v8"
+      : pathname.startsWith("/v7")
+        ? "v7"
+        : pathname.startsWith("/v6")
+          ? "v6"
+          : pathname.startsWith("/v5")
+            ? "v5"
+            : pathname.startsWith("/v4")
+              ? "v4"
+              : pathname.startsWith("/v3")
+                ? "v3"
+                : pathname.startsWith("/v2")
+                  ? "v2"
+                  : "v1";
 
   return (
-    <div className="fixed bottom-4 left-3 z-50 sm:bottom-5 sm:left-5">
-      <div className="flex items-center gap-0.5 rounded-full border border-ink/12 bg-white/94 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.08)] backdrop-blur-md">
-        <span className="hidden items-center gap-1 pl-2.5 pr-1 font-mono text-[9px] font-bold tracking-[0.16em] text-muted uppercase sm:inline-flex">
+    <div className="fixed bottom-4 left-3 z-50 max-w-[calc(100vw-24px)] sm:bottom-5 sm:left-5">
+      <div className="flex items-center gap-0.5 overflow-x-auto rounded-full border border-ink/12 bg-white/95 p-1 shadow-[0_8px_28px_rgba(0,0,0,0.08)] backdrop-blur-md">
+        <span className="hidden items-center gap-1 pl-2.5 pr-1 font-mono text-[9px] font-bold tracking-[0.16em] text-muted uppercase md:inline-flex">
           <Layers className="h-3 w-3" />
           UI
         </span>
@@ -58,7 +64,7 @@ export default function VersionSwitcher() {
               href={v.href}
               title={v.title}
               className={cn(
-                "relative rounded-full px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.08em] uppercase transition-colors",
+                "relative shrink-0 rounded-full px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.06em] uppercase transition-colors",
                 isActive ? v.activeText : "text-ink/65 hover:text-ink"
               )}
             >
