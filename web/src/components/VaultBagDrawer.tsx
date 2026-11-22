@@ -315,60 +315,61 @@ export default function VaultBagDrawer() {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-hairline bg-surface shadow-2xl"
+              transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] shadow-[-24px_0_80px_rgba(17,17,15,0.16)]"
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-hairline px-6 py-5 sm:px-7">
+              <div className="flex items-center justify-between border-b border-[#DDD7CB] bg-[#F7F5F0]/80 px-6 py-5 sm:px-7">
                 <div className="flex items-baseline gap-3">
-                  <h2 className="font-serif text-2xl text-ink">
-                    Your Bag
+                  <h2 className="font-poster text-2xl tracking-[0.03em] text-[#111110] uppercase">
+                    YOUR BAG
                   </h2>
-                  <span className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+                  <span className="font-mono text-[11px] tracking-[0.14em] text-[#6A655D] uppercase">
                     ({totalQuantity})
                   </span>
                 </div>
                 <button
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => !processingStage && setCartOpen(false)}
                   aria-label="Close bag"
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center text-muted transition-colors hover:text-ink"
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#DDD7CB] bg-[#FFFFFF] text-[#6A655D] transition-colors hover:border-[#111110] hover:text-[#111110]"
                 >
-                  <X className="h-4 w-4 stroke-[1.5]" />
+                  <X className="h-4 w-4 stroke-[1.75]" />
                 </button>
               </div>
 
               {/* Minimalist Reservation Timer Strip */}
               {cart.length > 0 && reservationSecondsLeft > 0 && (
-                <div className="border-b border-hairline bg-paper px-6 py-3 sm:px-7">
+                <div className="border-b border-[#DDD7CB] bg-[#F7F5F0] px-6 py-3 sm:px-7">
                   <div className="flex items-center justify-between font-mono text-[11px] tracking-[0.12em] uppercase">
-                    <span className="flex items-center gap-2 text-muted">
+                    <span className="flex items-center gap-2 text-[#6A655D]">
                       <span
                         className={cn(
                           "h-1.5 w-1.5 rounded-full",
-                          isUrgent ? "bg-vermilion" : "bg-ink"
+                          isUrgent ? "bg-[#8E1C1C]" : "bg-[#9A7B4F]"
                         )}
                       />
                       Held for{" "}
                       <span
                         className={cn(
-                          "font-medium",
-                          isUrgent ? "text-vermilion" : "text-ink"
+                          "font-semibold",
+                          isUrgent ? "text-[#8E1C1C]" : "text-[#111110]"
                         )}
                       >
                         {formatTimer(reservationSecondsLeft)}
                       </span>
                     </span>
-                    <span className="text-[10px] text-muted">
+                    <span className="text-[10px] text-[#9A7B4F]">
                       Drop 01 Allocation
                     </span>
                   </div>
-                  <div className="mt-2 h-[1.5px] w-full bg-hairline">
+                  <div className="mt-2 h-[2px] w-full overflow-hidden rounded-full bg-[#DDD7CB]">
                     <div
                       style={{ width: `${progressPercent}%` }}
                       className={cn(
                         "h-full transition-all duration-1000",
-                        isUrgent ? "bg-vermilion" : "bg-ink"
+                        isUrgent ? "bg-[#8E1C1C]" : "bg-[#111110]"
                       )}
                     />
                   </div>
@@ -600,13 +601,14 @@ export default function VaultBagDrawer() {
 
                       <button
                         type="submit"
+                        suppressHydrationWarning
                         disabled={Boolean(processingStage)}
-                        className="mt-5 flex w-full cursor-pointer items-center justify-center bg-ink py-4 text-xs font-medium tracking-[0.14em] text-paper uppercase transition-opacity hover:opacity-88 disabled:opacity-50"
+                        className="mt-5 flex w-full cursor-pointer items-center justify-center rounded-full bg-[#8E1C1C] py-4 font-sans text-xs font-semibold tracking-[0.16em] text-white uppercase transition-colors hover:bg-[#111110] disabled:opacity-50"
                       >
                         Complete Order — {formatInr(cartTotalInr)}
                       </button>
 
-                      <p className="mt-3 text-center font-mono text-[10px] tracking-[0.12em] text-muted uppercase">
+                      <p className="mt-3 text-center font-mono text-[10px] tracking-[0.12em] text-[#6A655D] uppercase">
                         UPI · Cards · Netbanking · 100% Encrypted Checkout
                       </p>
                     </div>

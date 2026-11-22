@@ -3,8 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Lock, Menu, ShoppingBag, Unlock, X } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useSpring,
+} from "framer-motion";
+import { ArrowUpRight, Menu, ShoppingBag, Unlock, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useVault } from "@/context/VaultContext";
 import { cn } from "@/lib/utils";
@@ -56,17 +61,22 @@ export default function V9Navbar() {
   const [accountOpen, setAccountOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
+  const { scrollYProgress } = useScroll();
+  const readingProgress = useSpring(scrollYProgress, {
+    stiffness: 220,
+    damping: 32,
+    restDelta: 0.001,
+  });
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close drawers/dropdowns when route changes
   useEffect(() => {
     setMobileOpen(false);
     setAccountOpen(false);
   }, [pathname]);
 
-  // Close account menu on Escape or outside click
   useEffect(() => {
     if (!accountOpen) return;
 
@@ -90,7 +100,6 @@ export default function V9Navbar() {
     };
   }, [accountOpen]);
 
-  // Lock body scroll when full-height mobile drawer is open
   useEffect(() => {
     if (!mobileOpen) return;
     const prevOverflow = document.body.style.overflow;
@@ -104,8 +113,6 @@ export default function V9Navbar() {
   const activePass = mounted ? waitlistPass : null;
   const safeCartCount = mounted ? cartCount : 0;
   const activeUser = mounted ? user : null;
-
-  const queuePosition = activePass ? activePass.position : 1843;
 
   return (
     <>
@@ -124,7 +131,7 @@ export default function V9Navbar() {
         </div>
 
         {/* Tier 2: Main Architectural Header (68px) */}
-        <div className="h-[68px] w-full border-b border-[#DDD7CB] bg-[#F7F5F0]/92 backdrop-blur-xl">
+        <div className="relative h-[68px] w-full border-b border-[#DDD7CB] bg-[#F7F5F0]/92 backdrop-blur-xl">
           <div className="mx-auto grid h-full max-w-[1400px] grid-cols-3 items-center px-4 sm:px-8">
             {/* Left: Multi-page Navigation + Mobile Menu Button */}
             <div className="flex items-center justify-start">
@@ -133,7 +140,7 @@ export default function V9Navbar() {
                 suppressHydrationWarning
                 onClick={() => setMobileOpen(true)}
                 aria-label="Open navigation menu"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] transition-colors duration-200 hover:border-[#111110] lg:hidden"
+                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] transition-all duration-200 hover:border-[#111110] hover:bg-[#111110] hover:text-[#F7F5F0] lg:hidden"
               >
                 <Menu className="h-4 w-4 stroke-[1.75]" />
               </button>
@@ -148,11 +155,12 @@ export default function V9Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      aria-current={active ? "page" : undefined}
                       className={cn(
-                        "relative inline-flex items-center gap-1.5 py-2 font-sans text-[11px] font-medium tracking-[0.16em] uppercase transition-colors duration-200",
+                        "group relative inline-flex items-center gap-1.5 py-2 font-sans text-[11px] tracking-[0.16em] uppercase transition-colors duration-200",
                         active
-                          ? "text-[#111110]"
-                          : "text-[#6A655D] hover:text-[#111110]"
+                          ? "font-semibold text-[#111110]"
+                          : "font-medium text-[#6A655D] hover:text-[#111110]"
                       )}
                     >
                       <span>{item.label}</span>
@@ -163,6 +171,12 @@ export default function V9Navbar() {
                             "h-1.5 w-1.5 rounded-full transition-colors duration-300",
                             vaultOpen ? "bg-[#8E1C1C]" : "bg-[#9A7B4F]"
                           )}
+                        />
+                      )}
+                      {!active && (
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-[#111110]/30 transition-transform duration-250 ease-out group-hover:scale-x-100"
                         />
                       )}
                       {active && (
@@ -189,45 +203,79 @@ export default function V9Navbar() {
                 aria-label="KNITX Flagship Home"
                 className="group inline-flex items-baseline focus:outline-none"
               >
-                <span className="font-poster text-3xl leading-none tracking-[0.06em] text-[#111110] uppercase transition-opacity duration-200 group-hover:opacity-85 sm:text-4xl">
+                <span className="font-poster text-3xl leading-none tracking-[0.06em] text-[#111110] uppercase transition-opacity duration-200 group-hover:opacity-80 sm:text-4xl">
                   KNITX
                 </span>
-                <span className="font-poster text-3xl leading-none text-[#8E1C1C] sm:text-4xl">
+                <span className="font-poster text-3xl leading-none text-[#8E1C1C] transition-transform duration-200 group-hover:scale-110 sm:text-4xl">
                   .
                 </span>
               </Link>
             </div>
 
             {/* Right: Queue/Vault Pill, Bag, Account */}
-            <div className="flex items-center justify-end gap-2.5 sm:gap-4">
-              {/* Mounted-safe Vault / Line Pill */}
+            <div className="flex items-center justify-end gap-2 sm:gap-3.5">
+              {/* Mounted-safe 3-State Vault / Queue / Waitlist Pill */}
               {vaultOpen ? (
                 <Link
                   href="/v9/vault"
-                  className="hidden items-center gap-1.5 rounded-full bg-[#8E1C1C] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-white uppercase transition-colors duration-200 hover:bg-[#721515] sm:inline-flex"
+                  className="hidden items-center gap-1.5 rounded-full bg-[#8E1C1C] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-white uppercase shadow-[0_8px_20px_-10px_rgba(142,28,28,0.6)] transition-all duration-200 hover:bg-[#721515] sm:inline-flex"
                 >
                   <Unlock className="h-3 w-3 stroke-[2]" />
                   <span>VAULT OPEN</span>
                 </Link>
+              ) : activePass ? (
+                <Link
+                  href="/v9#waitlist"
+                  className="hidden items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-all duration-200 hover:border-[#9A7B4F] hover:text-[#8E1C1C] sm:inline-flex"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 rounded-full bg-[#9A7B4F]"
+                  />
+                  <span className="tabular-nums">
+                    LINE #{activePass.position}
+                  </span>
+                </Link>
               ) : (
                 <Link
                   href="/v9#waitlist"
-                  className="hidden items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-colors duration-200 hover:border-[#8E1C1C] hover:text-[#8E1C1C] sm:inline-flex"
+                  className="hidden items-center gap-2 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-all duration-200 hover:border-[#8E1C1C] hover:text-[#8E1C1C] sm:inline-flex"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#9A7B4F]" />
-                  <span>LINE #{queuePosition}</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative flex h-2 w-2 items-center justify-center"
+                  >
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8E1C1C]/65" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#8E1C1C]" />
+                  </span>
+                  <span>JOIN WAITLIST</span>
                 </Link>
               )}
 
-              {/* Bag Button */}
+              {/* Bag Pill with Conditional Oxblood Counter Badge */}
               <button
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setCartOpen(true)}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-[11px] font-medium tracking-[0.14em] text-[#111110] uppercase transition-colors duration-200 hover:border-[#DDD7CB] hover:bg-[#FFFFFF]"
+                aria-label={`Open collector bag with ${safeCartCount} items`}
+                className={cn(
+                  "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[10px] font-medium tracking-[0.15em] text-[#111110] uppercase transition-all duration-200 sm:text-[11px]",
+                  safeCartCount > 0
+                    ? "border-[#DDD7CB] bg-[#FFFFFF] hover:border-[#8E1C1C]"
+                    : "border-transparent bg-transparent hover:border-[#DDD7CB] hover:bg-[#FFFFFF]"
+                )}
               >
                 <ShoppingBag className="h-3.5 w-3.5 stroke-[1.75]" />
-                <span>BAG ({safeCartCount})</span>
+                <span>BAG</span>
+                {safeCartCount > 0 ? (
+                  <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#8E1C1C] px-1.5 font-mono text-[10px] leading-none font-semibold text-white tabular-nums">
+                    {safeCartCount}
+                  </span>
+                ) : (
+                  <span className="font-mono text-[10px] text-[#6A655D] tabular-nums">
+                    0
+                  </span>
+                )}
               </button>
 
               {/* Sign In / Collector Initials Dropdown */}
@@ -307,20 +355,27 @@ export default function V9Navbar() {
               </div>
             </div>
           </div>
+
+          {/* Hairline Oxblood Reading Progress Bar */}
+          <motion.div
+            aria-hidden="true"
+            style={{ scaleX: readingProgress }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[1.5px] origin-left bg-[#8E1C1C]"
+          />
         </div>
       </header>
 
-      {/* Silky Full-Height Mobile Drawer */}
+      {/* Full-Height Architectural Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-50 flex flex-col bg-[#F7F5F0] lg:hidden"
           >
-            {/* Mobile Drawer Top Bar */}
+            {/* Mobile Drawer Masthead */}
             <div className="flex h-[68px] items-center justify-between border-b border-[#DDD7CB] px-5">
               <Link
                 href="/v9"
@@ -340,34 +395,64 @@ export default function V9Navbar() {
                 suppressHydrationWarning
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close navigation menu"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DDD7CB] bg-[#FFFFFF] text-[#111110]"
+                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] transition-colors duration-200 hover:border-[#111110] hover:bg-[#111110] hover:text-[#F7F5F0]"
               >
                 <X className="h-4 w-4 stroke-[1.75]" />
               </button>
             </div>
 
-            {/* Mobile Status Banner */}
+            {/* Live Vault / Queue Status Banner */}
             <div className="flex items-center justify-between border-b border-[#DDD7CB] bg-[#ECE8DF] px-5 py-3.5">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-[#6A655D] uppercase">
-                DROP 01 ACCESS
-              </span>
+              <div className="flex flex-col">
+                <span className="font-mono text-[9px] tracking-[0.22em] text-[#6A655D] uppercase">
+                  DROP 01 STATUS
+                </span>
+                <span className="mt-0.5 font-sans text-xs font-medium text-[#111110]">
+                  {vaultOpen
+                    ? "Private vault unlocked"
+                    : activePass
+                      ? "Waitlist pass confirmed"
+                      : "Reserve your numbered spot"}
+                </span>
+              </div>
+
               {vaultOpen ? (
                 <Link
                   href="/v9/vault"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#8E1C1C] px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-white uppercase"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#8E1C1C] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-white uppercase"
                 >
-                  <Unlock className="h-3 w-3" />
+                  <Unlock className="h-3 w-3 stroke-[2]" />
                   <span>VAULT OPEN</span>
+                </Link>
+              ) : activePass ? (
+                <Link
+                  href="/v9#waitlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-[#111110] uppercase"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 rounded-full bg-[#9A7B4F]"
+                  />
+                  <span className="tabular-nums">
+                    LINE #{activePass.position}
+                  </span>
                 </Link>
               ) : (
                 <Link
                   href="/v9#waitlist"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-[#111110] uppercase"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#DDD7CB] bg-[#FFFFFF] px-3.5 py-1.5 font-mono text-[10px] font-medium tracking-[0.16em] text-[#111110] uppercase"
                 >
-                  <Lock className="h-3 w-3 text-[#9A7B4F]" />
-                  <span>LINE #{queuePosition}</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative flex h-2 w-2 items-center justify-center"
+                  >
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8E1C1C]/65" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#8E1C1C]" />
+                  </span>
+                  <span>JOIN WAITLIST</span>
                 </Link>
               )}
             </div>
@@ -375,9 +460,9 @@ export default function V9Navbar() {
             {/* All 5 Flagship Routes */}
             <motion.nav
               aria-label="Mobile flagship navigation"
-              initial={{ y: 16, opacity: 0 }}
+              initial={{ y: 14, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-1 flex-col justify-center divide-y divide-[#DDD7CB] overflow-y-auto px-6 py-4"
             >
               {NAV_ITEMS.map((item) => {
@@ -386,20 +471,30 @@ export default function V9Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={active ? "page" : undefined}
                     onClick={() => setMobileOpen(false)}
-                    className="group flex items-baseline justify-between py-5"
+                    className="group flex items-center justify-between py-5"
                   >
                     <span className="flex items-center gap-3">
+                      {active && (
+                        <span
+                          aria-hidden="true"
+                          className="h-6 w-[2.5px] rounded-full bg-[#8E1C1C]"
+                        />
+                      )}
                       <span
                         className={cn(
-                          "font-poster text-4xl tracking-[0.02em] uppercase transition-colors",
-                          active ? "text-[#8E1C1C]" : "text-[#111110]"
+                          "font-poster text-4xl leading-none tracking-[0.02em] uppercase transition-colors duration-200",
+                          active
+                            ? "text-[#8E1C1C]"
+                            : "text-[#111110] group-hover:text-[#8E1C1C]"
                         )}
                       >
                         {item.label}
                       </span>
                       {item.isVault && (
                         <span
+                          aria-hidden="true"
                           className={cn(
                             "h-2 w-2 rounded-full",
                             vaultOpen ? "bg-[#8E1C1C]" : "bg-[#9A7B4F]"
@@ -407,7 +502,12 @@ export default function V9Navbar() {
                         />
                       )}
                     </span>
-                    <span className="font-mono text-xs tracking-[0.2em] text-[#6A655D]">
+                    <span
+                      className={cn(
+                        "font-mono text-xs tracking-[0.2em]",
+                        active ? "text-[#8E1C1C]" : "text-[#6A655D]"
+                      )}
+                    >
                       {item.index}
                     </span>
                   </Link>
@@ -416,7 +516,7 @@ export default function V9Navbar() {
             </motion.nav>
 
             {/* Mobile Drawer Footer Controls */}
-            <div className="border-t border-[#DDD7CB] bg-[#ECE8DF]/70 px-6 py-5">
+            <div className="border-t border-[#DDD7CB] bg-[#ECE8DF]/75 px-6 py-5">
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
@@ -425,10 +525,17 @@ export default function V9Navbar() {
                     setMobileOpen(false);
                     setCartOpen(true);
                   }}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#111110] bg-[#FFFFFF] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-[#111110] uppercase"
+                  className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#111110] bg-[#FFFFFF] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-colors duration-200 hover:border-[#8E1C1C]"
                 >
-                  <ShoppingBag className="h-3.5 w-3.5" />
-                  <span>BAG ({safeCartCount})</span>
+                  <ShoppingBag className="h-3.5 w-3.5 stroke-[1.75]" />
+                  <span>BAG</span>
+                  {safeCartCount > 0 ? (
+                    <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#8E1C1C] px-1.5 font-mono text-[10px] leading-none font-semibold text-white tabular-nums">
+                      {safeCartCount}
+                    </span>
+                  ) : (
+                    <span className="text-[#6A655D] tabular-nums">0</span>
+                  )}
                 </button>
 
                 {activeUser ? (
@@ -439,7 +546,7 @@ export default function V9Navbar() {
                       setMobileOpen(false);
                       void logout();
                     }}
-                    className="inline-flex flex-1 items-center justify-center rounded-full bg-[#111110] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-[#F7F5F0] uppercase"
+                    className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-full bg-[#111110] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-[#F7F5F0] uppercase transition-colors duration-200 hover:bg-[#8E1C1C]"
                   >
                     SIGN OUT
                   </button>
@@ -451,7 +558,7 @@ export default function V9Navbar() {
                       setMobileOpen(false);
                       setAuthModalOpen(true);
                     }}
-                    className="inline-flex flex-1 items-center justify-center rounded-full bg-[#8E1C1C] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-white uppercase"
+                    className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-full bg-[#8E1C1C] px-4 py-3 font-mono text-[11px] font-medium tracking-[0.16em] text-white uppercase transition-colors duration-200 hover:bg-[#721515]"
                   >
                     SIGN IN
                   </button>

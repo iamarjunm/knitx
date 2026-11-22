@@ -243,13 +243,30 @@ export default function V9HomeClient({ drop, products }: V9HomeClientProps) {
                 <span>DROP 01 · CURATED SPOTLIGHT</span>
               </p>
               <h2 className="mt-3 font-poster text-4xl leading-[0.92] tracking-[0.01em] text-[#111110] uppercase sm:text-6xl">
-                FOUR GLIMPSES FROM THE TEN.
+                DROP 01 PREVIEW.
               </h2>
             </div>
             <p className="max-w-sm font-sans text-sm leading-relaxed text-[#6A655D]">
               Inspect three revealed pieces directly, or part the silk gauze to
               preview the sealed archive awaiting inside the vault.
             </p>
+          </div>
+
+          {/* Crisp Two-Tier Legend Strip */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2.5 border-b border-[#DDD7CB]/70 pb-5">
+            <div className="inline-flex items-center gap-2.5">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-[#111110]" />
+              <span className="font-mono text-[10px] font-medium tracking-[0.2em] text-[#111110] uppercase sm:text-[11px]">
+                SMALL-BATCH · 3–4 UNITS · ₹2,500–₹4,000
+              </span>
+            </div>
+            <span className="hidden h-3.5 w-px bg-[#DDD7CB] sm:inline-block" />
+            <div className="inline-flex items-center gap-2.5">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-[#9A7B4F]" />
+              <span className="font-mono text-[10px] font-medium tracking-[0.2em] text-[#9A7B4F] uppercase sm:text-[11px]">
+                ONE-OF-ONE · ONLY 1 IN THE WORLD · ₹5,000–₹10,000+
+              </span>
+            </div>
           </div>
 
           {/* 4-Card Curated Architectural Grid */}
@@ -367,11 +384,22 @@ export default function V9HomeClient({ drop, products }: V9HomeClientProps) {
             <motion.article
               whileHover={{ y: -4 }}
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              onMouseEnter={() => setCurtainParted(true)}
-              onMouseLeave={() => setCurtainParted(false)}
+              onPointerEnter={(e) => {
+                if (e.pointerType === "mouse") setCurtainParted(true);
+              }}
+              onPointerLeave={(e) => {
+                if (e.pointerType === "mouse") setCurtainParted(false);
+              }}
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#DDD7CB] bg-[#FFFFFF] shadow-[0_14px_38px_-28px_rgba(17,17,16,0.22)] transition-colors duration-300 hover:border-[#8E1C1C]"
             >
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#ECE8DF]">
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => setCurtainParted((prev) => !prev)}
+                aria-expanded={curtainParted}
+                aria-label="Part silk gauze curtain preview"
+                className="relative aspect-[4/5] w-full cursor-pointer overflow-hidden bg-[#ECE8DF] text-left focus:outline-none"
+              >
                 {/* Underlying Sealed Silhouette Preview */}
                 <img
                   src={mysteryBackdrop}
@@ -384,55 +412,58 @@ export default function V9HomeClient({ drop, products }: V9HomeClientProps) {
                   )}
                 />
 
-                {/* Left Silk-Gauze Curtain Panel */}
+                {/* Left Ivory Silk-Gauze Curtain Panel */}
                 <motion.div
                   aria-hidden="true"
-                  animate={{ x: curtainParted ? "-44%" : "0%" }}
+                  animate={{ x: curtainParted ? "-22%" : "0%" }}
                   transition={{
                     type: "spring",
-                    stiffness: 170,
-                    damping: 24,
+                    stiffness: 160,
+                    damping: 22,
+                    mass: 0.9,
                   }}
-                  className="pointer-events-none absolute inset-y-0 left-0 w-1/2 border-r border-[#DDD7CB]/90 bg-[#F7F5F0]/82 backdrop-blur-md"
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1/2 border-r border-[#DDD7CB]/90 bg-[#F7F5F0]/86 backdrop-blur-md"
                   style={{
                     backgroundImage:
                       "repeating-linear-gradient(90deg, rgba(17,17,16,0.03) 0px, rgba(17,17,16,0.03) 1px, transparent 1px, transparent 10px)",
                   }}
                 />
 
-                {/* Right Silk-Gauze Curtain Panel */}
+                {/* Right Ivory Silk-Gauze Curtain Panel */}
                 <motion.div
                   aria-hidden="true"
-                  animate={{ x: curtainParted ? "44%" : "0%" }}
+                  animate={{ x: curtainParted ? "22%" : "0%" }}
                   transition={{
                     type: "spring",
-                    stiffness: 170,
-                    damping: 24,
+                    stiffness: 160,
+                    damping: 22,
+                    mass: 0.9,
                   }}
-                  className="pointer-events-none absolute inset-y-0 right-0 w-1/2 border-l border-[#DDD7CB]/90 bg-[#F7F5F0]/82 backdrop-blur-md"
+                  className="pointer-events-none absolute inset-y-0 right-0 w-1/2 border-l border-[#DDD7CB]/90 bg-[#F7F5F0]/86 backdrop-blur-md"
                   style={{
                     backgroundImage:
                       "repeating-linear-gradient(90deg, rgba(17,17,16,0.03) 0px, rgba(17,17,16,0.03) 1px, transparent 1px, transparent 10px)",
                   }}
                 />
 
-                {/* Center Seal & Interactive Toggle for Touch Devices */}
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
-                  <button
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={() => setCurtainParted((prev) => !prev)}
-                    aria-label="Part silk gauze curtain preview"
-                    className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border border-[#9A7B4F] bg-[#8E1C1C] text-[#F7F5F0] shadow-[0_12px_28px_-10px_rgba(142,28,28,0.65)] transition-transform duration-300 group-hover:scale-105"
+                {/* Center Seal & Tactile Touch/Hover Prompt */}
+                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
+                  <span
+                    className={cn(
+                      "flex h-14 w-14 items-center justify-center rounded-full border border-[#9A7B4F] bg-[#8E1C1C] text-[#F7F5F0] shadow-[0_12px_28px_-10px_rgba(142,28,28,0.65)] transition-transform duration-300",
+                      curtainParted ? "scale-105" : "group-hover:scale-105"
+                    )}
                   >
                     <Lock className="h-4 w-4 stroke-[2]" />
-                  </button>
+                  </span>
 
                   <span className="mt-4 rounded-full border border-[#DDD7CB] bg-[#F7F5F0]/92 px-3 py-1 font-mono text-[9px] font-medium tracking-[0.2em] text-[#111110] uppercase backdrop-blur-md">
-                    {curtainParted ? "CURTAIN PARTED" : "HOVER TO PART GAUZE"}
+                    {curtainParted
+                      ? "SILK CURTAIN PARTED"
+                      : "TAP OR HOVER TO PART"}
                   </span>
                 </div>
-              </div>
+              </button>
 
               <div className="flex flex-1 flex-col justify-between p-5">
                 <div>
@@ -476,7 +507,7 @@ export default function V9HomeClient({ drop, products }: V9HomeClientProps) {
       {/* SECTION 4: Tactile Wax-Sealed Cotton Envelope Waitlist (#waitlist) */}
       <section
         id="waitlist"
-        className="w-full scroll-mt-24 border-y border-[#DDD7CB] bg-[#ECE8DF] py-20 sm:py-28"
+        className="w-full scroll-mt-28 border-y border-[#DDD7CB] bg-[#ECE8DF] py-20 sm:py-28"
       >
         <div className="mx-auto max-w-[1040px] px-4 sm:px-8">
           {/* Editorial Heading */}

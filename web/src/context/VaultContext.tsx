@@ -39,6 +39,7 @@ export interface VaultContextValue {
   joinWaitlist: (name: string, email: string) => Promise<WaitlistPass>;
   unlockVaultDemo: () => void;
   unlockVaultWithCode: (code: string) => boolean;
+  lockVaultPreview: () => void;
 }
 
 const VaultContext = createContext<VaultContextValue | undefined>(undefined);
@@ -331,6 +332,26 @@ export function VaultProvider({ children }: { children: React.ReactNode }) {
     [waitlistPass]
   );
 
+  const lockVaultPreview = useCallback(() => {
+    setIsVaultUnlocked(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(VAULT_UNLOCKED_STORAGE_KEY);
+    }
+    if (waitlistPass) {
+      const resetPass: WaitlistPass = {
+        ...waitlistPass,
+        status: "queued",
+      };
+      setWaitlistPass(resetPass);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          WAITLIST_STORAGE_KEY,
+          JSON.stringify(resetPass)
+        );
+      }
+    }
+  }, [waitlistPass]);
+
   const cartTotalInr = useMemo(
     () =>
       cart.reduce(
@@ -363,6 +384,7 @@ export function VaultProvider({ children }: { children: React.ReactNode }) {
       joinWaitlist,
       unlockVaultDemo,
       unlockVaultWithCode,
+      lockVaultPreview,
     }),
     [
       waitlistPass,
@@ -379,6 +401,7 @@ export function VaultProvider({ children }: { children: React.ReactNode }) {
       joinWaitlist,
       unlockVaultDemo,
       unlockVaultWithCode,
+      lockVaultPreview,
     ]
   );
 

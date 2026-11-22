@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
+import { useVault } from "@/context/VaultContext";
 import type { DropCampaign } from "@/lib/types";
 
 interface V9HeroProps {
@@ -18,6 +19,7 @@ interface CountdownParts {
 }
 
 const FALLBACK_OFFSET_MS = (4 * 86400 + 11 * 3600 + 23 * 60 + 9) * 1000;
+const FALLBACK_QUEUE_COUNT = 1842;
 
 function formatCountdownFromMs(diffMs: number): CountdownParts {
   const totalSec = Math.max(0, Math.floor(diffMs / 1000));
@@ -35,6 +37,11 @@ function formatCountdownFromMs(diffMs: number): CountdownParts {
   };
 }
 
+function formatQueueCount(count: number): string {
+  const safe = Number.isFinite(count) && count > 0 ? Math.floor(count) : FALLBACK_QUEUE_COUNT;
+  return String(safe).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function normalizeDropLabel(dropNumber?: string): string {
   const cleaned = (dropNumber || "").trim().toUpperCase();
   if (!cleaned) return "DROP 01";
@@ -50,6 +57,8 @@ function normalizeDropLabel(dropNumber?: string): string {
 
 export default function V9Hero({ drop }: V9HeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { waitlistPass } = useVault();
+
   const [mounted, setMounted] = useState(false);
   const [countdown, setCountdown] = useState<CountdownParts | null>(null);
 
@@ -99,10 +108,20 @@ export default function V9Hero({ drop }: V9HeroProps) {
 
   const dropLabel = normalizeDropLabel(drop?.dropNumber);
 
+  const baseQueueCount =
+    Number.isFinite(drop?.waitlistCount) && drop.waitlistCount > 0
+      ? drop.waitlistCount
+      : FALLBACK_QUEUE_COUNT;
+
+  const liveQueueCount =
+    mounted && waitlistPass?.totalInQueue
+      ? Math.max(baseQueueCount, waitlistPass.totalInQueue)
+      : baseQueueCount;
+
   const countdownDisplay =
     mounted && countdown
-      ? `${countdown.days}D : ${countdown.hours}H : ${countdown.minutes}M : ${countdown.seconds}S`
-      : "--D : --H : --M : --S";
+      ? `${countdown.days} : ${countdown.hours} : ${countdown.minutes} : ${countdown.seconds}`
+      : "-- : -- : -- : --";
 
   const scrollToWaitlist = () => {
     const el = document.getElementById("waitlist");
@@ -114,7 +133,7 @@ export default function V9Hero({ drop }: V9HeroProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-x-clip bg-[#F7F5F0] pt-10 pb-20 sm:pt-14 sm:pb-28"
+      className="relative overflow-x-clip bg-[#F7F5F0] pt-7 pb-16 sm:pt-10 sm:pb-24"
     >
       {/* Top Whisper Line + Monumental 3-Line Kinetic Headline */}
       <div className="mx-auto max-w-[1400px] px-4 text-center sm:px-8">
@@ -131,7 +150,7 @@ export default function V9Hero({ drop }: V9HeroProps) {
 
         <h1
           aria-label="You can't buy until we call your number."
-          className="mt-5 text-center font-poster text-[13vw] leading-[0.86] tracking-[-0.01em] uppercase select-none sm:mt-6 sm:text-[10vw] lg:text-[8.4rem]"
+          className="mt-3.5 text-center font-poster text-[12vw] leading-[0.86] tracking-[-0.01em] uppercase select-none sm:mt-4 sm:text-[8.5vw] lg:text-[6.8rem]"
         >
           <motion.span
             style={{ x: line1X }}
@@ -159,14 +178,14 @@ export default function V9Hero({ drop }: V9HeroProps) {
 
           <motion.span
             style={{ scale: line3Scale }}
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.72,
               delay: 0.16,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="mt-2.5 inline-block rounded-2xl bg-[#111110] px-6 py-2 text-[#F7F5F0] shadow-[0_18px_40px_-24px_rgba(17,17,16,0.45)] sm:mt-3.5 sm:px-10 sm:py-2.5"
+            className="mt-2 inline-block rounded-2xl bg-[#111110] px-5 py-1.5 text-[#F7F5F0] shadow-[0_18px_40px_-24px_rgba(17,17,16,0.45)] sm:mt-2.5 sm:px-9 sm:py-2"
           >
             YOUR NUMBER.
           </motion.span>
@@ -174,14 +193,14 @@ export default function V9Hero({ drop }: V9HeroProps) {
       </div>
 
       {/* Scroll-Expanding Architectural Arch Portal */}
-      <div className="mx-auto mt-8 max-w-[1320px] px-4 sm:mt-10 sm:px-8">
+      <div className="mx-auto mt-6 max-w-[1320px] px-4 sm:mt-7 sm:px-8">
         <motion.div
           style={{
             scale: frameScale,
             borderTopLeftRadius: frameTopRadius,
             borderTopRightRadius: frameTopRadius,
           }}
-          className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl border border-[#DDD7CB] bg-[#ECE8DF] shadow-[0_36px_96px_-48px_rgba(17,17,16,0.3)] sm:aspect-[16/9]"
+          className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl border border-[#DDD7CB] bg-[#ECE8DF] shadow-[0_36px_96px_-48px_rgba(17,17,16,0.3)] sm:aspect-[16/9] lg:max-h-[540px]"
         >
           <motion.img
             src="/images/hero-editorial-light.jpg"
@@ -194,46 +213,106 @@ export default function V9Hero({ drop }: V9HeroProps) {
           />
 
           {/* Subtle Warm Architectural Vignette */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#111110]/40 via-[#111110]/10 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#111110]/45 via-[#111110]/12 to-transparent" />
 
-          {/* Clean Frosted Limestone Bottom Overlay */}
-          <div className="absolute inset-x-3 bottom-3 z-10 sm:inset-x-6 sm:bottom-6 lg:inset-x-8 lg:bottom-8">
-            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#DDD7CB]/90 bg-[#F7F5F0]/90 px-4 py-4 shadow-[0_20px_50px_-25px_rgba(17,17,16,0.28)] backdrop-blur-xl sm:flex-row sm:items-center sm:px-7 sm:py-5">
-              {/* Countdown & Concise Edition Spec */}
-              <div className="space-y-1 text-left">
-                <div className="flex items-center gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#8E1C1C]" />
-                  <p className="font-mono text-xs font-semibold tracking-[0.2em] text-[#111110] uppercase tabular-nums sm:text-sm">
-                    {countdownDisplay}
-                  </p>
+          {/* Upgraded Frosted Limestone Bottom Bar */}
+          <div className="absolute inset-x-3 bottom-3 z-10 sm:inset-x-6 sm:bottom-5 lg:inset-x-8 lg:bottom-6">
+            <div className="relative overflow-hidden rounded-2xl border border-[#DDD7CB]/90 bg-[#F7F5F0]/92 px-4 py-3.5 shadow-[0_20px_50px_-25px_rgba(17,17,16,0.28)] backdrop-blur-xl sm:px-6 sm:py-4">
+              {/* Antique-Brass Top Hairline Accent */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#9A7B4F]/45 to-transparent"
+              />
+
+              <div className="flex flex-col justify-between gap-3.5 lg:flex-row lg:items-center lg:gap-5">
+                {/* Live Countdown + Antique-Brass Hairline Divider + Live Queue Count */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+                  {/* Mounted-Safe Live Countdown (DD : HH : MM : SS) */}
+                  <div className="text-left">
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-1.5 rounded-full bg-[#8E1C1C]"
+                      />
+                      <p className="font-mono text-sm font-semibold tracking-[0.18em] text-[#111110] uppercase tabular-nums sm:text-base">
+                        {countdownDisplay}
+                      </p>
+                    </div>
+                    <p className="mt-0.5 pl-3.5 font-mono text-[9px] tracking-[0.24em] text-[#6A655D] uppercase">
+                      DD : HH : MM : SS · NEXT RELEASE
+                    </p>
+                  </div>
+
+                  {/* Antique-Brass Hairline Divider */}
+                  <div
+                    aria-hidden="true"
+                    className="h-px w-full bg-[#9A7B4F]/35 sm:h-9 sm:w-px"
+                  />
+
+                  {/* Live Queue Count */}
+                  <div className="text-left">
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-1.5 rounded-full bg-[#9A7B4F]"
+                      />
+                      <p className="font-mono text-xs font-semibold tracking-[0.18em] text-[#111110] uppercase tabular-nums sm:text-[13px]">
+                        {formatQueueCount(liveQueueCount)} IN QUEUE
+                      </p>
+                    </div>
+                    <p className="mt-0.5 pl-3.5 font-sans text-[11px] tracking-[0.02em] text-[#6A655D] sm:text-xs">
+                      3–4 small-batch units · Two 1-of-1s
+                    </p>
+                  </div>
                 </div>
-                <p className="font-sans text-xs tracking-[0.02em] text-[#6A655D] sm:text-sm">
-                  3–4 small-batch units · Two 1-of-1s · Cut only after you order
-                </p>
-              </div>
 
-              {/* Dual Flagship Actions */}
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  onClick={scrollToWaitlist}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#8E1C1C] px-5 py-3 font-sans text-[11px] font-medium tracking-[0.16em] text-white uppercase transition-colors duration-200 hover:bg-[#721515] sm:px-6 sm:py-3.5"
-                >
-                  <span>CLAIM YOUR SPOT</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
+                {/* Dual Flagship Actions */}
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={scrollToWaitlist}
+                    className="group inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#8E1C1C] px-5 py-2.5 font-sans text-[11px] font-medium tracking-[0.16em] text-white uppercase shadow-[0_12px_24px_-12px_rgba(142,28,28,0.65)] transition-all duration-200 hover:bg-[#721515] sm:px-6 sm:py-3"
+                  >
+                    <span>CLAIM YOUR SPOT</span>
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </button>
 
-                <Link
-                  href="/v9/vault"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#111110]/20 bg-[#F7F5F0] px-5 py-3 font-sans text-[11px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-colors duration-200 hover:border-[#111110] hover:bg-[#FFFFFF] sm:px-6 sm:py-3.5"
-                >
-                  <span>ENTER THE VAULT</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
+                  <Link
+                    href="/v9/vault"
+                    className="group inline-flex items-center gap-2 rounded-full border border-[#111110]/20 bg-[#F7F5F0] px-5 py-2.5 font-sans text-[11px] font-medium tracking-[0.16em] text-[#111110] uppercase transition-all duration-200 hover:border-[#111110] hover:bg-[#FFFFFF] sm:px-6 sm:py-3"
+                  >
+                    <span>ENTER THE VAULT</span>
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
+        </motion.div>
+
+        {/* Discreet Centered Bottom Scroll Hint */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.35 }}
+          className="mt-6 flex justify-center sm:mt-7"
+        >
+          <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.22em] text-[#6A655D] uppercase">
+            <span>Scroll to explore</span>
+            <motion.span
+              aria-hidden="true"
+              animate={{ y: [0, 3, 0] }}
+              transition={{
+                duration: 2.2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="inline-flex items-center text-[#9A7B4F]"
+            >
+              <ArrowDown className="h-3 w-3 stroke-[1.75]" />
+            </motion.span>
+          </span>
         </motion.div>
       </div>
     </section>

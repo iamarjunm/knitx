@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -41,8 +43,10 @@ const SILKY_EASE = [0.22, 1, 0.36, 1] as const;
 const CURTAIN_EASE = [0.76, 0, 0.24, 1] as const;
 
 export function V9GarmentDrawer({ product, onClose }: V9GarmentDrawerProps) {
-  const { addToCart, setCartOpen } = useVault();
+  const router = useRouter();
+  const { isVaultUnlocked, addToCart, setCartOpen } = useVault();
 
+  const [mounted, setMounted] = useState(false);
   const [sizeChoice, setSizeChoice] = useState<{
     productId: string;
     size: string;
@@ -51,6 +55,12 @@ export function V9GarmentDrawer({ product, onClose }: V9GarmentDrawerProps) {
     productId: string;
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const canReserve = mounted && isVaultUnlocked;
 
   const selectedSize = useMemo(() => {
     if (!product) return "";
@@ -85,7 +95,7 @@ export function V9GarmentDrawer({ product, onClose }: V9GarmentDrawerProps) {
   }, [product, onClose]);
 
   const handleReserve = () => {
-    if (!product) return;
+    if (!product || !canReserve) return;
     if (product.remainingUnits <= 0) {
       setFeedback({
         productId: product._id,
@@ -108,6 +118,20 @@ export function V9GarmentDrawer({ product, onClose }: V9GarmentDrawerProps) {
     setFeedback(null);
     setCartOpen(true);
     onClose();
+  };
+
+  const handleJoinWaitlistToReserve = () => {
+    onClose();
+    if (typeof window !== "undefined") {
+      const waitlistSection = document.getElementById("waitlist");
+      if (waitlistSection) {
+        window.setTimeout(() => {
+          waitlistSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 90);
+        return;
+      }
+    }
+    router.push("/v9#waitlist");
   };
 
   return (
@@ -259,78 +283,108 @@ export function V9GarmentDrawer({ product, onClose }: V9GarmentDrawerProps) {
                 </div>
               </div>
 
-              {/* Crisp Size Selector Pills */}
-              <div className="mt-6">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] tracking-[0.22em] text-[#6A655D] uppercase">
-                    SELECT SIZE
-                  </span>
-                  <span className="font-mono text-[11px] font-medium tracking-[0.14em] text-[#111110] uppercase">
-                    {selectedSize}
-                  </span>
-                </div>
+              {/* Crisp Size Selector Pills (Unlocked Vault Members Only) */}
+              {canReserve && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] tracking-[0.22em] text-[#6A655D] uppercase">
+                      SELECT SIZE
+                    </span>
+                    <span className="font-mono text-[11px] font-medium tracking-[0.14em] text-[#111110] uppercase">
+                      {selectedSize}
+                    </span>
+                  </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {product.sizes.map((size) => {
-                    const isSelected = selectedSize === size;
-                    return (
-                      <button
-                        key={size}
-                        type="button"
-                        suppressHydrationWarning
-                        onClick={() => {
-                          setSizeChoice({ productId: product._id, size });
-                          setFeedback(null);
-                        }}
-                        className={cn(
-                          "rounded-full border px-4 py-2 font-mono text-xs tracking-[0.14em] uppercase transition-all duration-200 focus:outline-none",
-                          isSelected
-                            ? "border-[#111110] bg-[#111110] text-[#FFFFFF]"
-                            : "border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] hover:border-[#111110]"
-                        )}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.sizes.map((size) => {
+                      const isSelected = selectedSize === size;
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          suppressHydrationWarning
+                          onClick={() => {
+                            setSizeChoice({ productId: product._id, size });
+                            setFeedback(null);
+                          }}
+                          className={cn(
+                            "cursor-pointer rounded-full border px-4 py-2 font-mono text-xs tracking-[0.14em] uppercase transition-all duration-200 focus:outline-none",
+                            isSelected
+                              ? "border-[#111110] bg-[#111110] text-[#FFFFFF]"
+                              : "border-[#DDD7CB] bg-[#FFFFFF] text-[#111110] hover:border-[#111110]"
+                          )}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {activeFeedback && (
+              {canReserve && activeFeedback && (
                 <p className="mt-4 rounded-lg border border-[#8E1C1C]/30 bg-[#8E1C1C]/5 px-3.5 py-2.5 font-sans text-xs text-[#8E1C1C]">
                   {activeFeedback}
                 </p>
               )}
             </div>
 
-            {/* Sticky Reservation CTA Footer */}
+            {/* Sticky Reservation / Waitlist-Gated CTA Footer */}
             <div className="border-t border-[#DDD7CB] bg-[#FFFFFF] px-6 py-5 sm:px-8">
-              <button
-                type="button"
-                suppressHydrationWarning
-                disabled={product.remainingUnits <= 0}
-                onClick={handleReserve}
-                className={cn(
-                  "flex w-full items-center justify-center gap-2.5 rounded-full px-6 py-4 font-sans text-xs font-semibold tracking-[0.2em] uppercase transition-colors duration-300 focus:outline-none",
-                  product.remainingUnits <= 0
-                    ? "cursor-not-allowed bg-[#ECE8DF] text-[#6A655D]"
-                    : product.tier === "one-of-one"
-                      ? "bg-[#8E1C1C] text-[#FFFFFF] hover:bg-[#731515]"
-                      : "bg-[#111110] text-[#FFFFFF] hover:bg-[#8E1C1C]"
-                )}
-              >
-                <span>
-                  {product.remainingUnits <= 0
-                    ? "SOLD OUT · PERMANENTLY ARCHIVED"
-                    : `RESERVE PIECE — ${formatInr(product.priceInr)}`}
-                </span>
-                {product.remainingUnits > 0 && (
-                  <ArrowRight className="h-3.5 w-3.5" />
-                )}
-              </button>
-              <p className="mt-2.5 text-center font-mono text-[10px] tracking-[0.16em] text-[#6A655D] uppercase">
-                10-MINUTE VAULT HOLD · INSURED PAN-INDIA DELIVERY
-              </p>
+              {canReserve ? (
+                <>
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    disabled={product.remainingUnits <= 0}
+                    onClick={handleReserve}
+                    className={cn(
+                      "flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full px-6 py-4 font-sans text-xs font-semibold tracking-[0.2em] uppercase transition-colors duration-300 focus:outline-none",
+                      product.remainingUnits <= 0
+                        ? "cursor-not-allowed bg-[#ECE8DF] text-[#6A655D]"
+                        : product.tier === "one-of-one"
+                          ? "bg-[#8E1C1C] text-[#FFFFFF] hover:bg-[#731515]"
+                          : "bg-[#111110] text-[#FFFFFF] hover:bg-[#8E1C1C]"
+                    )}
+                  >
+                    <span>
+                      {product.remainingUnits <= 0
+                        ? "SOLD OUT · PERMANENTLY ARCHIVED"
+                        : `RESERVE PIECE — ${formatInr(product.priceInr)}`}
+                    </span>
+                    {product.remainingUnits > 0 && (
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <p className="mt-2.5 text-center font-mono text-[10px] tracking-[0.16em] text-[#6A655D] uppercase">
+                    10-MINUTE VAULT HOLD · INSURED PAN-INDIA DELIVERY
+                  </p>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={handleJoinWaitlistToReserve}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#8E1C1C] px-6 py-4 font-sans text-xs font-semibold tracking-[0.2em] text-[#FFFFFF] uppercase shadow-[0_12px_28px_-14px_rgba(142,28,28,0.55)] transition-colors duration-300 hover:bg-[#731515] focus:outline-none"
+                  >
+                    <Lock className="h-3.5 w-3.5 stroke-[2]" />
+                    <span>JOIN WAITLIST TO RESERVE →</span>
+                  </button>
+                  <p className="mt-3 text-center font-sans text-[11px] leading-relaxed text-[#6A655D]">
+                    Exclusive to admitted Drop 01 waitlist members — or enter
+                    key{" "}
+                    <Link
+                      href="/v9/vault"
+                      onClick={onClose}
+                      className="font-mono font-medium tracking-[0.1em] text-[#111110] underline decoration-[#9A7B4F]/60 underline-offset-4 transition-colors hover:text-[#8E1C1C]"
+                    >
+                      KNITX-001
+                    </Link>{" "}
+                    in the Vault.
+                  </p>
+                </>
+              )}
             </div>
           </motion.aside>
         </motion.div>
@@ -350,6 +404,7 @@ export default function V9VaultPageClient({
     joinWaitlist,
     unlockVaultDemo,
     unlockVaultWithCode,
+    lockVaultPreview,
   } = useVault();
 
   const [mounted, setMounted] = useState(false);
@@ -551,6 +606,15 @@ export default function V9VaultPageClient({
     setSelectedProduct(null);
   }, []);
 
+  const handleLockPreview = useCallback(() => {
+    setSelectedProduct(null);
+    setActiveFilter("all");
+    lockVaultPreview();
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [lockVaultPreview]);
+
   const dropLabel = drop.dropNumber.replace("DROP 001", "DROP 01") || "DROP 01";
 
   return (
@@ -613,7 +677,7 @@ export default function V9VaultPageClient({
         /* ================================================================== */
         /* LOCKED STATE: PRIVATE VAULT AIRLOCK                                */
         /* ================================================================== */
-        <section className="mx-auto max-w-[1380px] px-5 pt-28 pb-24 sm:px-10 sm:pt-32 lg:px-14">
+        <section className="mx-auto max-w-[1380px] px-5 pt-14 pb-24 sm:px-10 sm:pt-20 lg:px-14">
           {/* Serene Monumental Airlock Header */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -861,62 +925,91 @@ export default function V9VaultPageClient({
         /* ================================================================== */
         /* UNLOCKED STATE: PRIVATE MUSEUM SHOWROOM                            */
         /* ================================================================== */
-        <div className="pt-[60px] pb-28 sm:pt-[64px]">
-          {/* Crisp Top Gallery Bar */}
-          <div className="sticky top-[52px] z-30 border-b border-[#DDD7CB] bg-[#FFFFFF]/95 backdrop-blur-md sm:top-[56px]">
-            <div className="mx-auto flex max-w-[1380px] flex-col gap-4 px-5 py-4 sm:px-10 lg:flex-row lg:items-center lg:justify-between lg:px-14">
-              {/* Left: Live Vault Status + Remaining Inventory */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <div className="inline-flex items-center gap-2.5">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8E1C1C]/60" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#8E1C1C]" />
-                  </span>
-                  <span className="font-mono text-[11px] font-semibold tracking-[0.2em] text-[#8E1C1C] uppercase">
-                    VAULT OPEN · {dropLabel}
+        <div className="pb-28">
+          {/* Crisp Top Gallery Bar — sits cleanly below 96px sticky V9Navbar */}
+          <div className="sticky top-[96px] z-30 border-b border-[#DDD7CB] bg-[#FFFFFF]/95 backdrop-blur-md">
+            <div className="mx-auto flex max-w-[1380px] flex-col gap-3.5 px-5 py-3.5 sm:px-10 lg:flex-row lg:items-center lg:justify-between lg:px-14">
+              {/* Left: Live Vault Status + Remaining Inventory + Mobile Lock Preview */}
+              <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 lg:justify-start">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <div className="inline-flex items-center gap-2.5">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8E1C1C]/60" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#8E1C1C]" />
+                    </span>
+                    <span className="font-mono text-[11px] font-semibold tracking-[0.2em] text-[#8E1C1C] uppercase">
+                      VAULT OPEN · {dropLabel}
+                    </span>
+                  </div>
+
+                  <span className="hidden h-3.5 w-px bg-[#DDD7CB] sm:inline-block" />
+
+                  <span className="font-mono text-[11px] tracking-[0.18em] text-[#6A655D] uppercase">
+                    {inventoryStats.remaining} OF {inventoryStats.total} PIECES
+                    REMAINING
                   </span>
                 </div>
 
-                <span className="hidden h-3.5 w-px bg-[#DDD7CB] sm:inline-block" />
-
-                <span className="font-mono text-[11px] tracking-[0.18em] text-[#6A655D] uppercase">
-                  {inventoryStats.remaining} OF {inventoryStats.total} PIECES
-                  REMAINING
-                </span>
+                {/* Discreet Lock Preview (Mobile / Tablet Top-Right) */}
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={handleLockPreview}
+                  title="Re-lock vault to preview the airlock and curtain reveal"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#F7F5F0]/80 px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-[#6A655D] uppercase transition-colors duration-200 hover:border-[#111110] hover:text-[#111110] focus:outline-none lg:hidden"
+                >
+                  <Lock className="h-2.5 w-2.5" />
+                  <span>Lock Preview</span>
+                </button>
               </div>
 
-              {/* Right: Smooth layoutId Underline Filter Tabs */}
-              <nav
-                aria-label="Showroom filter tabs"
-                className="-mb-4 flex items-center gap-6 overflow-x-auto pb-0 lg:mb-0"
-              >
-                {filterTabs.map((tab) => {
-                  const isActive = activeFilter === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      suppressHydrationWarning
-                      onClick={() => setActiveFilter(tab.id)}
-                      className={cn(
-                        "relative shrink-0 pb-3.5 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors duration-200 focus:outline-none lg:py-1.5",
-                        isActive
-                          ? "font-medium text-[#111110]"
-                          : "text-[#6A655D] hover:text-[#111110]"
-                      )}
-                    >
-                      <span>{tab.label}</span>
-                      {isActive && (
-                        <motion.span
-                          layoutId="v9-vault-filter-underline"
-                          transition={{ duration: 0.32, ease: SILKY_EASE }}
-                          className="absolute inset-x-0 bottom-0 h-[2px] bg-[#8E1C1C] lg:-bottom-4"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
+              {/* Right: Smooth layoutId Underline Filter Tabs + Desktop Lock Preview */}
+              <div className="flex items-center justify-between gap-5 lg:justify-end">
+                <nav
+                  aria-label="Showroom filter tabs"
+                  className="-mb-3.5 flex items-center gap-6 overflow-x-auto pb-0 lg:mb-0"
+                >
+                  {filterTabs.map((tab) => {
+                    const isActive = activeFilter === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        suppressHydrationWarning
+                        onClick={() => setActiveFilter(tab.id)}
+                        className={cn(
+                          "relative shrink-0 cursor-pointer pb-3.5 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors duration-200 focus:outline-none lg:py-1.5",
+                          isActive
+                            ? "font-medium text-[#111110]"
+                            : "text-[#6A655D] hover:text-[#111110]"
+                        )}
+                      >
+                        <span>{tab.label}</span>
+                        {isActive && (
+                          <motion.span
+                            layoutId="v9-vault-filter-underline"
+                            transition={{ duration: 0.32, ease: SILKY_EASE }}
+                            className="absolute inset-x-0 bottom-0 h-[2px] bg-[#8E1C1C] lg:-bottom-3.5"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                {/* Discreet Understated Lock Preview (Desktop Right Corner) */}
+                <span className="hidden h-4 w-px bg-[#DDD7CB] lg:inline-block" />
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={handleLockPreview}
+                  title="Re-lock vault to preview the airlock and curtain reveal"
+                  className="hidden shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#DDD7CB] bg-[#F7F5F0]/70 px-3 py-1.5 font-mono text-[10px] tracking-[0.16em] text-[#6A655D] uppercase transition-colors duration-200 hover:border-[#111110] hover:bg-[#FFFFFF] hover:text-[#111110] focus:outline-none lg:inline-flex"
+                >
+                  <Lock className="h-2.5 w-2.5" />
+                  <span>Lock Preview</span>
+                </button>
+              </div>
             </div>
           </div>
 
