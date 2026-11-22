@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -75,7 +76,8 @@ interface VerifyOrderResponse {
 const LEGACY_TO_LIGHT_IMAGE: Record<string, string> = {
   "/images/piece-1of1-kali.png": "/images/look-1of1-jacket.jpg",
   "/images/piece-1of1-monolith.png": "/images/look-1of1-knit.jpg",
-  "/images/piece-batch-puff.png": "/images/look-batch-hoodie.jpg",
+  "/images/piece-batch-puff.png": "/images/look-batch-tee.jpg",
+  "/images/look-batch-hoodie.jpg": "/images/look-batch-tee.jpg",
   "/images/piece-batch-embroidery.png": "/images/look-batch-tee.jpg",
   "/images/piece-mystery-silhouette.png": "/images/look-mystery-veil.jpg",
 };
@@ -84,12 +86,18 @@ function resolveStudioImage(url: string, tier: ProductTier): string {
   if (!url) {
     return tier === "one-of-one"
       ? "/images/look-1of1-jacket.jpg"
-      : "/images/look-batch-hoodie.jpg";
+      : "/images/look-batch-tee.jpg";
   }
   return LEGACY_TO_LIGHT_IMAGE[url] ?? url;
 }
 
 export default function VaultBagDrawer() {
+  const pathname = usePathname();
+  const releaseHref = pathname.startsWith("/v10")
+    ? "/v10/release"
+    : pathname.startsWith("/v9")
+      ? "/v9/vault"
+      : "/vault";
   const { user } = useAuth();
   const {
     cart,
@@ -231,7 +239,7 @@ export default function VaultBagDrawer() {
           amount: orderData.amountPaise,
           currency: orderData.currency || "INR",
           name: "KNITX",
-          description: `Drop 01 Allocation · ${orderData.receipt}`,
+          description: `Limited Edition Allocation · ${orderData.receipt}`,
           order_id: orderData.orderId,
           prefill: {
             name: fullName.trim(),
@@ -361,7 +369,7 @@ export default function VaultBagDrawer() {
                       </span>
                     </span>
                     <span className="text-[10px] text-[#9A7B4F]">
-                      Drop 01 Allocation
+                      Current Edition
                     </span>
                   </div>
                   <div className="mt-2 h-[2px] w-full overflow-hidden rounded-full bg-[#DDD7CB]">
@@ -398,8 +406,8 @@ export default function VaultBagDrawer() {
                         "Issuing your archival certificate…"}
                     </h3>
                     <p className="mt-2 max-w-xs text-xs leading-relaxed text-muted">
-                      Please keep this window open while we confirm your Drop 01
-                      allocation with our studio.
+                      Please keep this window open while we confirm your
+                      numbered edition allocation with our atelier.
                     </p>
                   </motion.div>
                 )}
@@ -409,21 +417,21 @@ export default function VaultBagDrawer() {
               {cart.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
                   <p className="font-mono text-[10px] tracking-[0.2em] text-muted uppercase">
-                    Drop 01 · Private Vault
+                    KNITX · Private Release
                   </p>
-                  <h3 className="mt-3 font-serif text-3xl text-ink">
+                  <h3 className="mt-3 font-editorial text-3xl text-ink">
                     Your bag is empty.
                   </h3>
                   <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-                    Enter the Drop 01 Vault to reserve small-batch silhouettes
+                    Enter the current release to reserve small-batch silhouettes
                     or one-of-one collector pieces before editions close.
                   </p>
                   <Link
-                    href="/vault"
+                    href={releaseHref}
                     onClick={() => setCartOpen(false)}
                     className="mt-8 inline-flex items-center gap-2.5 bg-ink px-7 py-3.5 text-xs font-medium tracking-[0.12em] text-paper uppercase transition-opacity hover:opacity-88"
                   >
-                    <span>Explore the Vault</span>
+                    <span>Explore Current Release</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
@@ -674,9 +682,9 @@ export default function VaultBagDrawer() {
                 {/* Letterpress Heading */}
                 <div className="py-7 text-center">
                   <p className="font-mono text-[10px] tracking-[0.24em] text-muted uppercase">
-                    Drop 01 · Monsoon · KNITX India
+                    Limited Edition · KNITX India
                   </p>
-                  <h2 className="mt-3 font-serif text-4xl leading-tight text-ink sm:text-[42px]">
+                  <h2 className="mt-3 font-editorial text-4xl leading-tight text-ink sm:text-[42px]">
                     Certificate of{" "}
                     <span className="italic">Authenticity</span>
                   </h2>

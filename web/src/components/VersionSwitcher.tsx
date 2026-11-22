@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActiveVersion = "v1" | "v2" | "v3" | "v4" | "v5" | "v6" | "v7" | "v8" | "v9";
+type ActiveVersion = "v1" | "v2" | "v3" | "v4" | "v5" | "v6" | "v7" | "v8" | "v9" | "v10";
 
 const VERSIONS: {
   id: ActiveVersion;
@@ -26,27 +26,30 @@ const VERSIONS: {
   { id: "v7", href: "/v7", label: "V7", title: "V7 Warm Atelier", activeBg: "bg-[#254336]", activeText: "text-white" },
   { id: "v8", href: "/v8", label: "V8", title: "V8 V1×V2 Fusion", activeBg: "bg-[#FF4500]", activeText: "text-white" },
   { id: "v9", href: "/v9", label: "V9", title: "V9 Flagship Multi-Page", activeBg: "bg-[#8E1C1C]", activeText: "text-white" },
+  { id: "v10", href: "/v10", label: "V10", title: "V10 Editorial Luxury House", activeBg: "bg-[#111110]", activeText: "text-[#FAF9F6]" },
 ];
 
 export default function VersionSwitcher() {
   const pathname = usePathname();
-  const activeVersion: ActiveVersion = pathname.startsWith("/v9")
-    ? "v9"
-    : pathname.startsWith("/v8")
-      ? "v8"
-      : pathname.startsWith("/v7")
-        ? "v7"
-        : pathname.startsWith("/v6")
-          ? "v6"
-          : pathname.startsWith("/v5")
-            ? "v5"
-            : pathname.startsWith("/v4")
-              ? "v4"
-              : pathname.startsWith("/v3")
-                ? "v3"
-                : pathname.startsWith("/v2")
-                  ? "v2"
-                  : "v1";
+  const activeVersion: ActiveVersion = pathname.startsWith("/v10")
+    ? "v10"
+    : pathname.startsWith("/v9")
+      ? "v9"
+      : pathname.startsWith("/v8")
+        ? "v8"
+        : pathname.startsWith("/v7")
+          ? "v7"
+          : pathname.startsWith("/v6")
+            ? "v6"
+            : pathname.startsWith("/v5")
+              ? "v5"
+              : pathname.startsWith("/v4")
+                ? "v4"
+                : pathname.startsWith("/v3")
+                  ? "v3"
+                  : pathname.startsWith("/v2")
+                    ? "v2"
+                    : "v1";
 
   return (
     <div className="fixed bottom-4 left-3 z-50 max-w-[calc(100vw-24px)] sm:bottom-5 sm:left-5">

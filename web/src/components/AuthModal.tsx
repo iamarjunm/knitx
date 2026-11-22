@@ -144,8 +144,8 @@ export default function AuthModal() {
             </div>
 
             <p className="mt-3 font-sans text-xs leading-relaxed text-[#6A655D]">
-              Sign in to sync your Drop 01 queue spot, cast Drop 02 curator
-              votes, and submit original garment concepts.
+              Sign in to sync your waitlist position, vote on upcoming releases,
+              and submit original garment concepts.
             </p>
 
             {/* Google Sign-In */}

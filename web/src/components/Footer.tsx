@@ -15,7 +15,8 @@ export default function Footer() {
     pathname.startsWith("/v6") ||
     pathname.startsWith("/v7") ||
     pathname.startsWith("/v8") ||
-    pathname.startsWith("/v9")
+    pathname.startsWith("/v9") ||
+    pathname.startsWith("/v10")
   ) {
     return null;
   }
