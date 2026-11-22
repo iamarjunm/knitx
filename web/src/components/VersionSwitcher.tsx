@@ -25,7 +25,7 @@ const VERSIONS: {
   { id: "v6", href: "/v6", label: "V6", title: "V6 Swiss Clean", activeBg: "bg-[#1A4BFF]", activeText: "text-white" },
   { id: "v7", href: "/v7", label: "V7", title: "V7 Warm Atelier", activeBg: "bg-[#254336]", activeText: "text-white" },
   { id: "v8", href: "/v8", label: "V8", title: "V8 V1×V2 Fusion", activeBg: "bg-[#FF4500]", activeText: "text-white" },
-  { id: "v9", href: "/v9", label: "V9", title: "V9 V1×V5 Fusion", activeBg: "bg-[#D9381E]", activeText: "text-white" },
+  { id: "v9", href: "/v9", label: "V9", title: "V9 Flagship Multi-Page", activeBg: "bg-[#8E1C1C]", activeText: "text-white" },
 ];
 
 export default function VersionSwitcher() {
