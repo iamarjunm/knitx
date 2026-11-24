@@ -8,14 +8,13 @@ import {
   Syne,
 } from "next/font/google";
 import "./globals.css";
+import { StorefrontConfigProvider } from "@/context/StorefrontConfigContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { VaultProvider } from "@/context/VaultContext";
 import { SanityLive } from "@/sanity/lib/live";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FlagshipShell from "@/components/flagship/FlagshipShell";
 import AuthModal from "@/components/AuthModal";
 import VaultBagDrawer from "@/components/VaultBagDrawer";
-import VersionSwitcher from "@/components/VersionSwitcher";
 
 const anton = Anton({
   subsets: ["latin"],
@@ -54,13 +53,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KNITX® — DROP 01 · WAITLIST ONLY STREETWEAR",
+  title: "KNITX — Limited-Edition Streetwear & Core Wardrobe",
   description:
-    "No open store. 3–4 units per design. Two 1-of-1s. Community-voted Indian streetwear made only after you claim.",
+    "Numbered Indian streetwear cut to order with zero deadstock. Ultra-limited drops of 1–4 units per design alongside the heavyweight KNITX CORE wardrobe.",
   openGraph: {
-    title: "KNITX® — YOU CAN'T BUY UNTIL WE CALL YOUR NUMBER",
+    title: "KNITX — Limited-Edition Streetwear House",
     description:
-      "3–4 units per design. Two 1-of-1 collector pieces. Zero deadstock. Join Drop 01.",
+      "1–4 units per design, singular one-of-one collector works, and the heavyweight KNITX CORE wardrobe. Waitlist & community access.",
     type: "website",
     locale: "en_IN",
     siteName: "KNITX",
@@ -68,7 +67,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F6F2",
+  themeColor: "#FFFFFF",
   colorScheme: "light",
 };
 
@@ -85,23 +84,22 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-paper font-sans text-ink antialiased"
+        className="min-h-screen bg-white font-sans text-black antialiased"
       >
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="lazyOnload"
         />
-        <AuthProvider>
-          <VaultProvider>
-            <Navbar />
-            <main className="relative min-h-screen pb-24 md:pb-0">{children}</main>
-            <Footer />
-            <VersionSwitcher />
-            <AuthModal />
-            <VaultBagDrawer />
-            <SanityLive />
-          </VaultProvider>
-        </AuthProvider>
+        <StorefrontConfigProvider>
+          <AuthProvider>
+            <VaultProvider>
+              <FlagshipShell>{children}</FlagshipShell>
+              <AuthModal />
+              <VaultBagDrawer />
+              <SanityLive />
+            </VaultProvider>
+          </AuthProvider>
+        </StorefrontConfigProvider>
       </body>
     </html>
   );

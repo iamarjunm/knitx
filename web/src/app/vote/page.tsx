@@ -1,17 +1,17 @@
-import type { Metadata } from 'next';
-import { getVoteCandidates } from '@/sanity/lib/fetchers';
-import VoteClient from '@/components/VoteClient';
+import type { Metadata } from "next";
+import { getVoteCandidates } from "@/sanity/lib/fetchers";
+import FlagshipVoteClient from "@/components/flagship/FlagshipVoteClient";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 export const metadata: Metadata = {
-  title: 'COMMUNITY VOTING ARENA // KNITX DROP 002',
+  title: "Vote Next Drop · Community Ballot · KNITX",
   description:
-    'Vote on upcoming KNITX Drop 002 silhouettes. Top 4 concepts enter Sample-First production with creator neck-tag attribution.',
+    "Cast your ballot on shortlisted garment concepts to decide which silhouettes enter physical sample cutting for the next KNITX edition.",
 };
 
 export default async function VotePage() {
   const candidates = await getVoteCandidates();
 
-  return <VoteClient initialCandidates={candidates} />;
+  return <FlagshipVoteClient initialCandidates={candidates} />;
 }

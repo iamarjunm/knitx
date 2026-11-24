@@ -9,6 +9,14 @@ const TARGET_DIR = path.resolve(__dirname, '..', 'web', 'public', 'images');
 
 // Map generated artifact images to both light-editorial filenames and legacy filenames
 const ASSET_MAP = [
+  // Brand-new V12 Flagship & KNITX CORE studio & campaign photography
+  ['v12_hero_flagship_1795543747324.jpg', 'v12-hero-flagship.jpg'],
+  ['v12_core_hoodie_slate_1795543758859.jpg', 'v12-core-hoodie-slate.jpg'],
+  ['v12_core_colorways_stack_jpg_1795543766491.jpg', 'v12-core-colorways-stack.jpg'],
+  ['v12_core_campaign_duo_jpg_1795543770906.jpg', 'v12-core-campaign-duo.jpg'],
+  ['v12_drop_bomber_studio_1795543803489.jpg', 'v12-drop-bomber-studio.jpg'],
+  ['v12_atelier_sunlit_1795543781521.jpg', 'v12-atelier-sunlit.jpg'],
+
   // Primary light-editorial gallery filenames
   ['knitx_logo_1795283091621.jpg', 'knitx-logo-light.jpg'],
   ['hero_monsoon_1795283101171.jpg', 'hero-editorial-light.jpg'],

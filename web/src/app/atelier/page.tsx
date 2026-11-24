@@ -1,12 +1,12 @@
-import type { Metadata } from 'next';
-import AtelierClient from '@/components/AtelierClient';
+import type { Metadata } from "next";
+import FlagshipAtelierClient from "@/components/flagship/FlagshipAtelierClient";
 
 export const metadata: Metadata = {
-  title: 'SAMPLE-FIRST ATELIER // KNITX ARCHITECTURE',
+  title: "The Atelier — 0% Deadstock · KNITX",
   description:
-    'Zero deadstock. Zero mass production. Explore KNITX lean Sample-First drop architecture, 420–480 GSM fabrics, and Mumbai studio craftsmanship.',
+    "Inside the KNITX sample-first studio methodology: single-sample prototyping, heavyweight Indian textiles, artisanal chain-stitching, and permanent pattern retirement.",
 };
 
 export default function AtelierPage() {
-  return <AtelierClient />;
+  return <FlagshipAtelierClient />;
 }

@@ -20,6 +20,7 @@ const WAITLIST_STORAGE_KEY = "knitx_waitlist_pass_v1";
 const VAULT_UNLOCKED_STORAGE_KEY = "knitx_vault_unlocked_v1";
 const CART_STORAGE_KEY = "knitx_vault_cart_v1";
 const MASTER_PREVIEW_CODE = "KNITX-001";
+const CORE_COMMUNITY_CODE = "KNITX-CORE";
 const RESERVATION_DURATION_SECONDS = 10 * 60; // 10 minutes
 
 export interface VaultContextValue {
@@ -300,8 +301,28 @@ export function VaultProvider({ children }: { children: React.ReactNode }) {
       if (!normalized) return false;
 
       const passCode = waitlistPass?.accessCode?.trim().toUpperCase();
+      let customMasterCode = "";
+      let customCoreCode = "";
+      if (typeof window !== "undefined") {
+        try {
+          const rawCfg = window.localStorage.getItem("knitx_storefront_config_v12");
+          if (rawCfg) {
+            const parsed = JSON.parse(rawCfg) as {
+              masterAccessCode?: string;
+              coreAccessCode?: string;
+            };
+            customMasterCode = parsed.masterAccessCode?.trim().toUpperCase() || "";
+            customCoreCode = parsed.coreAccessCode?.trim().toUpperCase() || "";
+          }
+        } catch {
+          // Ignore storage errors
+        }
+      }
       const isValid =
         normalized === MASTER_PREVIEW_CODE ||
+        normalized === CORE_COMMUNITY_CODE ||
+        (Boolean(customMasterCode) && normalized === customMasterCode) ||
+        (Boolean(customCoreCode) && normalized === customCoreCode) ||
         (Boolean(passCode) && normalized === passCode);
 
       if (!isValid) {

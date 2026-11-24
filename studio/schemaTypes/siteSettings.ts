@@ -38,6 +38,13 @@ export const siteSettings = defineType({
       type: 'string',
       validation: (Rule) => Rule.email(),
     }),
+    defineField({
+      name: 'customizerConfig',
+      title: 'Admin Storefront Customizer JSON',
+      type: 'text',
+      rows: 6,
+      description: 'Managed automatically by the KNITX Admin Portal (/admin).',
+    }),
   ],
   preview: {
     select: {

@@ -74,10 +74,10 @@ interface VerifyOrderResponse {
 }
 
 const LEGACY_TO_LIGHT_IMAGE: Record<string, string> = {
-  "/images/piece-1of1-kali.png": "/images/look-1of1-jacket.jpg",
+  "/images/piece-1of1-kali.png": "/images/v12-drop-bomber-studio.jpg",
   "/images/piece-1of1-monolith.png": "/images/look-1of1-knit.jpg",
-  "/images/piece-batch-puff.png": "/images/look-batch-tee.jpg",
-  "/images/look-batch-hoodie.jpg": "/images/look-batch-tee.jpg",
+  "/images/piece-batch-puff.png": "/images/v12-core-hoodie-slate.jpg",
+  "/images/look-batch-hoodie.jpg": "/images/v12-core-hoodie-slate.jpg",
   "/images/piece-batch-embroidery.png": "/images/look-batch-tee.jpg",
   "/images/piece-mystery-silhouette.png": "/images/look-mystery-veil.jpg",
 };
@@ -85,23 +85,15 @@ const LEGACY_TO_LIGHT_IMAGE: Record<string, string> = {
 function resolveStudioImage(url: string, tier: ProductTier): string {
   if (!url) {
     return tier === "one-of-one"
-      ? "/images/look-1of1-jacket.jpg"
-      : "/images/look-batch-tee.jpg";
+      ? "/images/v12-drop-bomber-studio.jpg"
+      : "/images/v12-core-hoodie-slate.jpg";
   }
   return LEGACY_TO_LIGHT_IMAGE[url] ?? url;
 }
 
 export default function VaultBagDrawer() {
   const pathname = usePathname();
-  const releaseHref = pathname.startsWith("/v12")
-    ? "/v12/release"
-    : pathname.startsWith("/v11")
-      ? "/v11/release"
-      : pathname.startsWith("/v10")
-        ? "/v10/release"
-        : pathname.startsWith("/v9")
-          ? "/v9/vault"
-          : "/vault";
+  const releaseHref = pathname.startsWith("/core") ? "/core" : "/drops";
   const { user } = useAuth();
   const {
     cart,
@@ -421,23 +413,32 @@ export default function VaultBagDrawer() {
               {cart.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
                   <p className="font-mono text-[10px] tracking-[0.2em] text-muted uppercase">
-                    KNITX · Private Release
+                    KNITX · Drops &amp; Core
                   </p>
-                  <h3 className="mt-3 font-editorial text-3xl text-ink">
+                  <h3 className="mt-3 font-syne text-2xl font-extrabold uppercase tracking-[-0.02em] text-ink">
                     Your bag is empty.
                   </h3>
                   <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-                    Enter the current release to reserve small-batch silhouettes
-                    or one-of-one collector pieces before editions close.
+                    Explore the current drop or heavyweight Core wardrobe to
+                    reserve numbered silhouettes before editions close.
                   </p>
-                  <Link
-                    href={releaseHref}
-                    onClick={() => setCartOpen(false)}
-                    className="mt-8 inline-flex items-center gap-2.5 bg-ink px-7 py-3.5 text-xs font-medium tracking-[0.12em] text-paper uppercase transition-opacity hover:opacity-88"
-                  >
-                    <span>Explore Current Release</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  <div className="mt-8 flex flex-col gap-2.5 sm:flex-row">
+                    <Link
+                      href={releaseHref}
+                      onClick={() => setCartOpen(false)}
+                      className="inline-flex items-center justify-center gap-2.5 bg-ink px-7 py-3.5 text-xs font-medium tracking-[0.12em] text-paper uppercase transition-opacity hover:opacity-88"
+                    >
+                      <span>Explore Drops</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                    <Link
+                      href="/core"
+                      onClick={() => setCartOpen(false)}
+                      className="inline-flex items-center justify-center gap-2 border border-ink/20 px-6 py-3.5 text-xs font-medium tracking-[0.12em] text-ink uppercase transition-colors hover:border-ink"
+                    >
+                      <span>Core Wardrobe</span>
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-1 flex-col overflow-y-auto">
