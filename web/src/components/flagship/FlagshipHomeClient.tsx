@@ -242,7 +242,7 @@ export default function FlagshipHomeClient({
       {/* ===================================================================== */}
       {/* ACT 1: FULL-VIEWPORT 100SVH EDGE-TO-EDGE CAMPAIGN HERO                */}
       {/* ===================================================================== */}
-      <section className="relative flex min-h-[100svh] w-full flex-col justify-end overflow-hidden bg-black pt-28 pb-9 sm:pt-32 sm:pb-14 lg:h-[100svh] lg:min-h-[680px]">
+      <section className="relative flex min-h-[100svh] w-full flex-col justify-end overflow-hidden bg-black pt-24 pb-9 sm:pt-28 sm:pb-12 lg:h-[100svh] lg:min-h-[560px]">
         <img
           src={FLAGSHIP_MEDIA.heroCampaign}
           alt={heroTitle}
@@ -303,12 +303,23 @@ export default function FlagshipHomeClient({
                   </a>
                 )}
 
-                <Link
-                  href="/drops"
-                  className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 border border-white/85 bg-black/25 px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:w-auto sm:px-7"
-                >
-                  <span>{config.heroCtaSecondary || "EXPLORE DROPS"}</span>
-                </Link>
+                {canOpenDropProducts ? (
+                  <Link
+                    href={config.coreEnabled ? "/core" : "/archive"}
+                    className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 border border-white/85 bg-black/25 px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:w-auto sm:px-7"
+                  >
+                    <span>
+                      {config.coreEnabled ? "EXPLORE CORE" : "EDITIONS ARCHIVE"}
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/drops"
+                    className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 border border-white/85 bg-black/25 px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:w-auto sm:px-7"
+                  >
+                    <span>{config.heroCtaSecondary || "EXPLORE DROPS"}</span>
+                  </Link>
+                )}
               </div>
             </div>
 

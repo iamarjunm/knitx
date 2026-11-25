@@ -44,7 +44,7 @@ export default function FlagshipShell({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const bypassChrome = isChromeBypassPath(pathname);
-  const isHome = pathname === "/";
+  const isHome = !pathname || pathname === "/";
 
   useEffect(() => {
     setMounted(true);
@@ -58,12 +58,27 @@ export default function FlagshipShell({
     }
 
     const handleScroll = () => {
-      setScrolled(window.scrollY > 36);
+      const y =
+        window.scrollY ||
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        0;
+      setScrolled(y > 36);
     };
 
     handleScroll();
+    const rafId = window.requestAnimationFrame(handleScroll);
+    const settleTimer = window.setTimeout(handleScroll, 120);
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("pageshow", handleScroll);
+    window.addEventListener("load", handleScroll);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("pageshow", handleScroll);
+      window.removeEventListener("load", handleScroll);
+    };
   }, [isHome, bypassChrome]);
 
   useEffect(() => {
@@ -132,7 +147,7 @@ export default function FlagshipShell({
     : null;
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-white text-black selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-white text-black selection:bg-black selection:text-white">
       {/* Optional Live 32px Jet-Black Top Announcement Strip */}
       {showAnnouncement ? (
         <div
@@ -156,10 +171,10 @@ export default function FlagshipShell({
       {/* Ultra-Crisp 60px Fixed Gallery Flagship Header */}
       <header
         className={cn(
-          "fixed inset-x-0 z-40 h-[60px] transition-all duration-300",
+          "fixed inset-x-0 z-40 h-[60px] transition-[background-color,border-color,color,backdrop-filter] duration-300",
           showAnnouncement ? "top-8" : "top-0",
           isTransparent
-            ? "border-b border-transparent bg-transparent text-white"
+            ? "border-b border-transparent bg-gradient-to-b from-black/65 via-black/25 to-transparent text-white"
             : "border-b border-black/10 bg-white/95 text-black backdrop-blur-md"
         )}
       >
@@ -456,15 +471,16 @@ export default function FlagshipShell({
 
       {/* Main Content Canvas */}
       <main
-        className={
+        className={cn(
+          "overflow-x-clip",
           isHome ? "" : showAnnouncement ? "pt-[92px]" : "pt-[60px]"
-        }
+        )}
       >
         {children}
       </main>
 
       {/* Minimalist Gallery Flagship Footer */}
-      <footer className="border-t border-black/10 bg-white text-black">
+      <footer className="overflow-x-clip border-t border-black/10 bg-white text-black">
         <div className="mx-auto max-w-[1600px] px-4 pt-12 pb-16 sm:px-8 sm:pt-16 sm:pb-20">
           {/* Clean 4-Column SSENSE / Acne-Style Grid */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-9 border-b border-black/10 pb-12 sm:gap-10 sm:pb-14 lg:grid-cols-4">

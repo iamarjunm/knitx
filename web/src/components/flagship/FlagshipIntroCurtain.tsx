@@ -35,8 +35,8 @@ export default function FlagshipIntroCurtain({
     window.sessionStorage.setItem(INTRO_SESSION_KEY, "1");
     setPhase("playing");
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
 
     // Rapid precision counter 00 -> 100 over 1.05s
     const startMs = performance.now();
@@ -57,7 +57,7 @@ export default function FlagshipIntroCurtain({
 
     const splitTimer = window.setTimeout(() => {
       setPhase("splitting");
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousOverflow;
     }, 1520);
 
     const doneTimer = window.setTimeout(() => {
@@ -68,13 +68,13 @@ export default function FlagshipIntroCurtain({
       window.cancelAnimationFrame(rafId);
       window.clearTimeout(splitTimer);
       window.clearTimeout(doneTimer);
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousOverflow;
     };
   }, []);
 
   const handleSkip = () => {
     if (typeof document !== "undefined") {
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     }
     setPhase("done");
   };

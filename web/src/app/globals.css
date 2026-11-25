@@ -44,15 +44,16 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: #F7F6F2;
+  background-color: #FFFFFF;
   color: #0A0A0A;
+  overflow-x: clip;
 }
 
 body {
-  background-color: #F7F6F2;
+  background-color: #FFFFFF;
   color: #0A0A0A;
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
