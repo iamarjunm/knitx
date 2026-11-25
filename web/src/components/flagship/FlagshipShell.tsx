@@ -225,9 +225,15 @@ export default function FlagshipShell({
           <div className="flex items-center gap-2 sm:gap-6">
             {showUser ? (
               <div className="hidden items-center gap-2.5 sm:flex">
-                <span className="max-w-[104px] truncate font-sans text-[11px] font-semibold uppercase tracking-[0.16em]">
+                <Link
+                  href="/profile"
+                  className={cn(
+                    "max-w-[116px] truncate font-sans text-[11px] font-semibold uppercase tracking-[0.16em] transition-opacity hover:opacity-70",
+                    pathname === "/profile" ? "underline underline-offset-4" : ""
+                  )}
+                >
                   {memberFirstName}
-                </span>
+                </Link>
                 <span
                   aria-hidden="true"
                   className={isTransparent ? "text-white/35" : "text-black/25"}
@@ -394,10 +400,24 @@ export default function FlagshipShell({
 
               <div className="shrink-0 space-y-4 border-t border-black/10 pt-5 pb-2">
                 {showUser ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="truncate font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black">
-                      {showUser.displayName}
-                    </span>
+                  <div className="space-y-2.5">
+                    <Link
+                      href="/profile"
+                      onClick={() => setDrawerOpen(false)}
+                      className="flex min-h-[44px] items-center justify-between gap-3 border border-black/15 bg-[#F4F4F5] px-3.5 py-2.5 transition-colors hover:border-black"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black">
+                          {showUser.displayName}
+                        </p>
+                        <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#666666]">
+                          VIEW MEMBER PROFILE
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-black">
+                        →
+                      </span>
+                    </Link>
                     <button
                       suppressHydrationWarning
                       type="button"
@@ -406,7 +426,7 @@ export default function FlagshipShell({
                         setDrawerOpen(false);
                       }}
                       style={{ color: accentColor }}
-                      className="inline-flex min-h-[40px] shrink-0 cursor-pointer items-center font-sans text-[11px] font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
+                      className="inline-flex min-h-[36px] shrink-0 cursor-pointer items-center font-sans text-[11px] font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
                     >
                       SIGN OUT
                     </button>
@@ -543,6 +563,14 @@ export default function FlagshipShell({
                     </Link>
                   </li>
                 ) : null}
+                <li>
+                  <Link
+                    href="/profile"
+                    className="transition-opacity hover:opacity-60"
+                  >
+                    Member Profile
+                  </Link>
+                </li>
               </ul>
             </div>
 

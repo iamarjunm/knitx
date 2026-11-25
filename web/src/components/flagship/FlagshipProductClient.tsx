@@ -96,6 +96,9 @@ export default function FlagshipProductClient({
   }, [product._id, product.sizes]);
 
   const showUnlocked = mounted && isVaultUnlocked;
+  const isDropLive =
+    (mounted && config.dropPhase === "live") || drop.phase === "live";
+  const canOpenDropProducts = showUnlocked || isDropLive;
   const safeUser = mounted ? user : null;
   const safeWaitlistPass = mounted ? waitlistPass : null;
   const accentColor = mounted ? config.accentColor || "#E11D2E" : "#E11D2E";
@@ -103,7 +106,7 @@ export default function FlagshipProductClient({
     (mounted && config.activeDropNumber) || drop.dropNumber
   );
 
-  const isVeiled = product.isMystery && !showUnlocked;
+  const isVeiled = product.isMystery && !canOpenDropProducts;
   const displayTitle = isVeiled
     ? "VEILED SILHOUETTE"
     : cleanFlagshipText(product.title);
@@ -121,7 +124,7 @@ export default function FlagshipProductClient({
   const primaryImageSrc = getFlagshipProductImage(
     product,
     productIndex,
-    showUnlocked
+    canOpenDropProducts
   );
 
   const galleryPlates = useMemo<GalleryPlate[]>(() => {
@@ -190,7 +193,7 @@ export default function FlagshipProductClient({
   const isSoldOut = product.remainingUnits <= 0;
 
   const handleAddToBag = () => {
-    if (!showUnlocked || isSoldOut) return;
+    if (!canOpenDropProducts || isSoldOut) return;
     setBagNotice(null);
     const sizeToUse = selectedSize || product.sizes[0] || "ONE SIZE";
     const result = addToCart(product, sizeToUse);
@@ -209,6 +212,135 @@ export default function FlagshipProductClient({
   const toggleSpec = (id: SpecSectionId) => {
     setOpenSpec((prev) => (prev === id ? null : id));
   };
+
+  // =========================================================================
+  // HARD PRODUCT PAGE LOCK: BLOCK PDP UNTIL DROP ACCESS OR DROP RELEASE
+  // =========================================================================
+  if (!canOpenDropProducts) {
+    return (
+      <section className="flex min-h-[calc(100svh-3.75rem)] flex-col justify-center bg-[#FFFFFF] px-4 py-12 text-[#000000] sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-2xl text-center">
+          <div className="inline-flex items-center justify-center gap-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-[#666666] uppercase">
+            <span
+              aria-hidden="true"
+              style={{ backgroundColor: accentColor }}
+              className="h-2 w-2 shrink-0"
+            />
+            <span>{editionLabel} · PRODUCT PAGE LOCKED</span>
+          </div>
+
+          <h1 className="mt-4 font-poster text-4xl leading-[0.9] tracking-[0.01em] text-[#000000] uppercase sm:text-6xl">
+            DROP ACCESS REQUIRED
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-[#666666]">
+            Publicly released designs can be viewed on our lookbook cards.
+            Individual product pages unlock automatically once your account
+            receives drop access or the drop goes live — no access code
+            required.
+          </p>
+
+          {safeUser || safeWaitlistPass ? (
+            <div className="mx-auto mt-7 max-w-md border border-black/15 bg-[#F4F4F5] p-5 text-left">
+              <div className="flex items-center justify-between gap-2 border-b border-black/10 pb-3 font-mono text-[10px] font-semibold tracking-[0.16em] uppercase">
+                <span className="inline-flex items-center gap-2 text-[#000000]">
+                  <Lock className="h-3 w-3" />
+                  <span>ACCOUNT QUEUED</span>
+                </span>
+                {safeWaitlistPass ? (
+                  <span className="font-bold text-[#000000]">
+                    #{String(safeWaitlistPass.position).padStart(4, "0")}
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-3 break-all font-mono text-xs font-semibold text-[#000000]">
+                {safeUser?.email || safeWaitlistPass?.email}
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-[#666666]">
+                As soon as your account is granted admission or the drop
+                releases, every product page unlocks automatically.
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                {safeUser ? (
+                  <Link
+                    href="/profile"
+                    className="inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold tracking-[0.16em] text-[#000000] uppercase underline underline-offset-4 transition-opacity hover:opacity-65"
+                  >
+                    <span>VIEW MY PROFILE</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={() => setAuthModalOpen(true)}
+                    className="cursor-pointer font-mono text-[10px] font-semibold tracking-[0.16em] text-[#000000] uppercase underline underline-offset-4 transition-opacity hover:opacity-65"
+                  >
+                    SIGN IN TO SYNC ACCOUNT
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mx-auto mt-7 flex max-w-md flex-col gap-3 sm:flex-row">
+            {!safeUser ? (
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => setAuthModalOpen(true)}
+                className="inline-flex min-h-[48px] flex-1 cursor-pointer items-center justify-center gap-2 bg-[#000000] px-6 py-3.5 font-mono text-[11px] font-bold tracking-[0.18em] text-[#FFFFFF] uppercase transition-opacity hover:opacity-85"
+              >
+                <span>SIGN IN TO CHECK ACCESS</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+            <Link
+              href="/#waitlist"
+              className={cn(
+                "inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 border border-[#000000] px-6 py-3.5 font-mono text-[11px] font-bold tracking-[0.18em] uppercase transition-colors",
+                safeUser
+                  ? "bg-[#000000] text-[#FFFFFF] hover:opacity-85"
+                  : "bg-[#FFFFFF] text-[#000000] hover:bg-[#000000] hover:text-[#FFFFFF]"
+              )}
+            >
+              <span>JOIN WAITLIST</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase">
+            <Link
+              href="/"
+              className="transition-colors hover:text-[#000000]"
+            >
+              BACK TO LOOKBOOK
+            </Link>
+            <span aria-hidden="true" className="text-black/20">
+              ·
+            </span>
+            <Link
+              href="/drops"
+              className="transition-colors hover:text-[#000000]"
+            >
+              DROP ACCESS GATE
+            </Link>
+          </div>
+
+          <div className="mt-10 border-t border-black/10 pt-5">
+            <button
+              type="button"
+              suppressHydrationWarning
+              onClick={unlockVaultDemo}
+              className="cursor-pointer font-mono text-[10px] tracking-[0.14em] text-neutral-400 underline-offset-4 transition-colors hover:text-[#000000] hover:underline"
+            >
+              Preview Unlocked Mode
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#FFFFFF] pb-24 text-[#000000] lg:pb-0">
@@ -558,7 +690,7 @@ export default function FlagshipProductClient({
                 </div>
               ) : null}
 
-              {showUnlocked ? (
+              {canOpenDropProducts ? (
                 <div className="space-y-3">
                   <button
                     type="button"
@@ -870,11 +1002,11 @@ export default function FlagshipProductClient({
 
             <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
               {relatedProducts.map(({ product: item, index: itemIndex }) => {
-                const itemVeiled = item.isMystery && !showUnlocked;
+                const itemVeiled = item.isMystery && !canOpenDropProducts;
                 const itemImg = getFlagshipProductImage(
                   item,
                   itemIndex,
-                  showUnlocked
+                  canOpenDropProducts
                 );
                 const itemName = itemVeiled
                   ? `VEILED SILHOUETTE ${String(itemIndex + 1).padStart(2, "0")}`
@@ -955,7 +1087,7 @@ export default function FlagshipProductClient({
             </p>
           </div>
 
-          {showUnlocked ? (
+          {canOpenDropProducts ? (
             <button
               type="button"
               suppressHydrationWarning

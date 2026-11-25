@@ -8,6 +8,7 @@ import {
   AlertCircle,
   ArrowRight,
   Check,
+  Lock,
   Minus,
   Plus,
   Ruler,
@@ -273,6 +274,93 @@ export default function FlagshipCoreProductClient({
   ]);
 
   const isTrouser = garment.category === "Trouser";
+
+  // =========================================================================
+  // HARD CORE PRODUCT LOCK: BLOCK CORE PDP UNTIL COMMUNITY ACCESS OR OPEN
+  // =========================================================================
+  if (!hasCoreAccess) {
+    return (
+      <section className="flex min-h-[calc(100svh-3.75rem)] flex-col justify-center bg-[#FFFFFF] px-4 py-12 text-[#000000] sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-2xl text-center">
+          <div className="inline-flex items-center justify-center gap-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-[#666666] uppercase">
+            <span
+              aria-hidden="true"
+              style={{ backgroundColor: accentColor }}
+              className="h-2 w-2 shrink-0"
+            />
+            <span>KNITX CORE · COMMUNITY ACCESS REQUIRED</span>
+          </div>
+
+          <h1 className="mt-4 font-poster text-4xl leading-[0.9] tracking-[0.01em] text-[#000000] uppercase sm:text-6xl">
+            CORE PRODUCT PAGE LOCKED
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-[#666666]">
+            Explore all KNITX CORE silhouettes and mineral colorways on the Core
+            studio grid. Individual product pages open exclusively to Drop 1
+            admitted accounts and community waitlist members — no access code
+            required.
+          </p>
+
+          <div className="mx-auto mt-5 inline-flex items-center gap-2 border border-black/15 bg-[#F4F4F5] px-3.5 py-2 font-mono text-[10px] font-semibold tracking-[0.16em] text-[#000000] uppercase">
+            <Lock className="h-3 w-3" />
+            <span>
+              OPENS {offsetDays} DAYS POST-{editionLabel} · {coreLaunchLabel}
+            </span>
+          </div>
+
+          <div className="mx-auto mt-7 flex max-w-md flex-col gap-3 sm:flex-row">
+            {!safeUser ? (
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => setAuthModalOpen(true)}
+                className="inline-flex min-h-[48px] flex-1 cursor-pointer items-center justify-center gap-2 bg-[#000000] px-6 py-3.5 font-mono text-[11px] font-bold tracking-[0.16em] text-[#FFFFFF] uppercase transition-opacity hover:opacity-85"
+              >
+                <span>SIGN IN WITH ACCOUNT</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+
+            <Link
+              href="/core#core-access"
+              className={cn(
+                "inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 border border-[#000000] px-6 py-3.5 font-mono text-[11px] font-bold tracking-[0.16em] uppercase transition-colors",
+                safeUser
+                  ? "bg-[#000000] text-[#FFFFFF] hover:opacity-85"
+                  : "bg-[#FFFFFF] text-[#000000] hover:bg-[#000000] hover:text-[#FFFFFF]"
+              )}
+            >
+              <span>JOIN COMMUNITY WAITLIST</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase">
+            <Link
+              href="/core"
+              className="transition-colors hover:text-[#000000]"
+            >
+              BACK TO CORE STUDIO
+            </Link>
+            {safeUser ? (
+              <>
+                <span aria-hidden="true" className="text-black/20">
+                  ·
+                </span>
+                <Link
+                  href="/profile"
+                  className="transition-colors hover:text-[#000000]"
+                >
+                  VIEW MY PROFILE
+                </Link>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#FFFFFF] pb-24 text-[#000000] lg:pb-0">

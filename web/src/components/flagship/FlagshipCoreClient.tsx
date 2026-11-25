@@ -881,6 +881,71 @@ export default function FlagshipCoreClient({ drop }: FlagshipCoreClientProps) {
                 );
 
                 const productHref = `/core/${garment._id}?color=${activeSwatch.id}`;
+                const canOpenCorePage = mounted && hasCoreAccess;
+
+                const imageFrameContent = (
+                  <>
+                    <Image
+                      src={activeSwatch.imageUrl}
+                      alt={`${garment.title} — ${activeSwatch.name}`}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]"
+                    />
+
+                    {/* Subtle Top Spec Badges */}
+                    {canOpenCorePage ? (
+                      <div className="pointer-events-none absolute top-2 left-2 hidden bg-[#FFFFFF]/92 px-2 py-0.5 font-mono text-[9px] font-medium tracking-[0.12em] text-[#000000] uppercase backdrop-blur-xs sm:top-3.5 sm:left-3.5 sm:block sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.14em]">
+                        {garment.serialCode}
+                      </div>
+                    ) : (
+                      <div className="pointer-events-none absolute top-2 left-2 inline-flex items-center gap-1 bg-[#FFFFFF]/92 px-1.5 py-0.5 font-mono text-[8px] font-semibold tracking-[0.12em] text-[#000000] uppercase backdrop-blur-xs sm:top-3.5 sm:left-3.5 sm:px-2.5 sm:py-1 sm:text-[9px] sm:tracking-[0.14em]">
+                        <Lock className="h-2.5 w-2.5" />
+                        <span>PREVIEW</span>
+                      </div>
+                    )}
+
+                    <div className="pointer-events-none absolute top-2 right-2 bg-[#FFFFFF]/92 px-1.5 py-0.5 font-mono text-[8px] font-semibold tracking-[0.1em] text-[#000000] uppercase backdrop-blur-xs sm:top-3.5 sm:right-3.5 sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.12em]">
+                      {garment.gsmWeight}
+                    </div>
+
+                    {/* Subtle Hover Product Page Bar (Desktop) */}
+                    <div className="pointer-events-none absolute inset-x-3.5 bottom-3.5 hidden translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:block">
+                      <div className="flex items-center justify-between bg-[#FFFFFF]/96 px-4 py-3 font-mono text-[10px] font-semibold tracking-[0.16em] text-[#000000] uppercase shadow-sm backdrop-blur-xs">
+                        <span>
+                          {canOpenCorePage
+                            ? "VIEW PRODUCT · SELECT SIZE"
+                            : "COMMUNITY ACCESS REQUIRED"}
+                        </span>
+                        {canOpenCorePage ? (
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        ) : (
+                          <Lock className="h-3.5 w-3.5" />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+
+                const captionContent = (
+                  <>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                      <h3 className="line-clamp-2 font-syne text-xs leading-snug font-bold tracking-[-0.01em] text-[#000000] uppercase group-hover:underline group-hover:underline-offset-4 sm:text-[15px]">
+                        {garment.title}
+                      </h3>
+                      <span className="shrink-0 font-mono text-xs font-semibold text-[#000000] tabular-nums sm:text-sm">
+                        {formatInr(garment.priceInr)}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 flex items-center justify-between gap-2 font-mono text-[9px] tracking-[0.12em] text-[#666666] uppercase sm:mt-1.5 sm:text-[10px] sm:tracking-[0.14em]">
+                      <span className="truncate">{activeSwatch.name}</span>
+                      <span className="hidden shrink-0 sm:inline">
+                        {garment.gsmWeight} · {garment.category}
+                      </span>
+                    </div>
+                  </>
+                );
 
                 return (
                   <article
@@ -888,40 +953,25 @@ export default function FlagshipCoreClient({ drop }: FlagshipCoreClientProps) {
                     className="group flex flex-col"
                   >
                     {/* Tall Gallery Image Frame */}
-                    <Link
-                      href={productHref}
-                      aria-label={`View ${garment.title} in ${activeSwatch.name}`}
-                      className="relative block aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#000000]"
-                    >
-                      <Image
-                        src={activeSwatch.imageUrl}
-                        alt={`${garment.title} — ${activeSwatch.name}`}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]"
-                      />
-
-                      {/* Subtle Top Spec Badges */}
-                      <div className="pointer-events-none absolute top-2 left-2 hidden bg-[#FFFFFF]/92 px-2 py-0.5 font-mono text-[9px] font-medium tracking-[0.12em] text-[#000000] uppercase backdrop-blur-xs sm:top-3.5 sm:left-3.5 sm:block sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.14em]">
-                        {garment.serialCode}
-                      </div>
-
-                      <div className="pointer-events-none absolute top-2 right-2 bg-[#FFFFFF]/92 px-1.5 py-0.5 font-mono text-[8px] font-semibold tracking-[0.1em] text-[#000000] uppercase backdrop-blur-xs sm:top-3.5 sm:right-3.5 sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.12em]">
-                        {garment.gsmWeight}
-                      </div>
-
-                      {/* Subtle Hover Product Page Bar (Desktop) */}
-                      <div className="pointer-events-none absolute inset-x-3.5 bottom-3.5 hidden translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:block">
-                        <div className="flex items-center justify-between bg-[#FFFFFF]/96 px-4 py-3 font-mono text-[10px] font-semibold tracking-[0.16em] text-[#000000] uppercase shadow-sm backdrop-blur-xs">
-                          <span>
-                            {mounted && hasCoreAccess
-                              ? "VIEW PRODUCT · SELECT SIZE"
-                              : "VIEW SILHOUETTE"}
-                          </span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </div>
-                      </div>
-                    </Link>
+                    {canOpenCorePage ? (
+                      <Link
+                        href={productHref}
+                        aria-label={`View ${garment.title} in ${activeSwatch.name}`}
+                        className="relative block aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#000000]"
+                      >
+                        {imageFrameContent}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        suppressHydrationWarning
+                        onClick={() => scrollToElement("core-access")}
+                        aria-label={`${garment.title} — community access required`}
+                        className="relative block aspect-[3/4] w-full cursor-pointer overflow-hidden bg-[#F4F4F5] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#000000]"
+                      >
+                        {imageFrameContent}
+                      </button>
+                    )}
 
                     {/* Below-Image Tactile Swatch Row & Details */}
                     <div className="mt-2.5 flex flex-1 flex-col justify-between sm:mt-4">
@@ -968,26 +1018,23 @@ export default function FlagshipCoreClient({ drop }: FlagshipCoreClientProps) {
                       </div>
 
                       {/* Title & Price */}
-                      <Link
-                        href={productHref}
-                        className="mt-2 block w-full text-left sm:mt-3"
-                      >
-                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                          <h3 className="line-clamp-2 font-syne text-xs leading-snug font-bold tracking-[-0.01em] text-[#000000] uppercase group-hover:underline group-hover:underline-offset-4 sm:text-[15px]">
-                            {garment.title}
-                          </h3>
-                          <span className="shrink-0 font-mono text-xs font-semibold text-[#000000] tabular-nums sm:text-sm">
-                            {formatInr(garment.priceInr)}
-                          </span>
-                        </div>
-
-                        <div className="mt-1 flex items-center justify-between gap-2 font-mono text-[9px] tracking-[0.12em] text-[#666666] uppercase sm:mt-1.5 sm:text-[10px] sm:tracking-[0.14em]">
-                          <span className="truncate">{activeSwatch.name}</span>
-                          <span className="hidden shrink-0 sm:inline">
-                            {garment.gsmWeight} · {garment.category}
-                          </span>
-                        </div>
-                      </Link>
+                      {canOpenCorePage ? (
+                        <Link
+                          href={productHref}
+                          className="mt-2 block w-full text-left sm:mt-3"
+                        >
+                          {captionContent}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          suppressHydrationWarning
+                          onClick={() => scrollToElement("core-access")}
+                          className="mt-2 block w-full cursor-pointer text-left sm:mt-3"
+                        >
+                          {captionContent}
+                        </button>
+                      )}
                     </div>
                   </article>
                 );

@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useVault } from "@/context/VaultContext";
 import { useStorefrontConfig } from "@/context/StorefrontConfigContext";
 import { computeCoreLaunchDate } from "@/lib/core-catalog";
+import FlagshipIntroCurtain from "@/components/flagship/FlagshipIntroCurtain";
 import {
   FLAGSHIP_MEDIA,
   cleanFlagshipText,
@@ -127,6 +128,9 @@ export default function FlagshipHomeClient({
   }, [mounted, user]);
 
   const showUnlocked = mounted && isVaultUnlocked;
+  const isDropLive =
+    (mounted && config.dropPhase === "live") || drop.phase === "live";
+  const canOpenDropProducts = showUnlocked || isDropLive;
   const showUser = mounted ? user : null;
   const showPass = mounted ? waitlistPass : null;
   const accentColor = config.accentColor || "#E11D2E";
@@ -221,8 +225,20 @@ export default function FlagshipHomeClient({
       ? "md:grid-cols-2"
       : "md:grid-cols-1";
 
+  const handleLockedProductClick = () => {
+    const waitlistEl = document.getElementById("waitlist");
+    if (waitlistEl) {
+      waitlistEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setAuthModalOpen(true);
+  };
+
   return (
     <div className="bg-white text-black">
+      {/* Couture Runway Double-Shutter Opening Animation (plays once per session) */}
+      <FlagshipIntroCurtain editionLabel={editionLabel} />
+
       {/* ===================================================================== */}
       {/* ACT 1: FULL-VIEWPORT 100SVH EDGE-TO-EDGE CAMPAIGN HERO                */}
       {/* ===================================================================== */}
@@ -269,7 +285,7 @@ export default function FlagshipHomeClient({
               ) : null}
 
               <div className="mt-6 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                {showUnlocked ? (
+                {canOpenDropProducts ? (
                   <Link
                     href="/drops"
                     className="inline-flex min-h-[46px] w-full items-center justify-center gap-2.5 bg-white px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white sm:w-auto sm:px-7"
@@ -391,78 +407,107 @@ export default function FlagshipHomeClient({
             )}
           >
             {filteredProducts.map(({ product, index }) => {
-              const isVeiled = product.isMystery && !showUnlocked;
+              const isVeiled = product.isMystery && !canOpenDropProducts;
               const imgSrc = getFlagshipProductImage(
                 product,
                 index,
-                showUnlocked
+                canOpenDropProducts
               );
               const displayName = isVeiled
                 ? `VEILED SILHOUETTE ${String(index + 1).padStart(2, "0")}`
                 : cleanFlagshipText(product.title);
-              const cardHref = isVeiled ? "/drops" : `/product/${product.slug}`;
 
-              return (
-                <article key={product._id} className="group flex flex-col">
-                  <Link
-                    href={cardHref}
-                    className="flex flex-col text-left focus:outline-none"
-                  >
-                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
-                      <img
-                        src={imgSrc}
-                        alt={displayName}
-                        className={cn(
-                          "h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]",
-                          isVeiled ? "brightness-90 contrast-105" : ""
-                        )}
-                      />
+              const cardVisual = (
+                <>
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
+                    <img
+                      src={imgSrc}
+                      alt={displayName}
+                      className={cn(
+                        "h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]",
+                        isVeiled ? "brightness-90 contrast-105" : ""
+                      )}
+                    />
 
-                      {/* Minimal Corner Marker */}
-                      {product.tier === "one-of-one" && !isVeiled ? (
+                    {/* Minimal Corner Marker */}
+                    {product.tier === "one-of-one" && !isVeiled ? (
+                      <span
+                        style={{ backgroundColor: accentColor }}
+                        className="absolute top-2 left-2 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]"
+                      >
+                        1 OF 1
+                      </span>
+                    ) : isVeiled ? (
+                      <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-black/85 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]">
+                        <Lock className="h-2.5 w-2.5" />
+                        <span>VEILED</span>
+                      </span>
+                    ) : null}
+
+                    {/* Preview-Only Lock Badge when Drop Access is Required */}
+                    {!canOpenDropProducts && !isVeiled ? (
+                      <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-white/92 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-black backdrop-blur-xs sm:top-3 sm:right-3 sm:px-2 sm:text-[9px] sm:tracking-[0.14em]">
+                        <Lock className="h-2.5 w-2.5" />
+                        <span>PREVIEW</span>
+                      </span>
+                    ) : null}
+
+                    {/* Desktop Bottom Hover Strip */}
+                    <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
+                      {canOpenDropProducts
+                        ? "VIEW PRODUCT"
+                        : isVeiled
+                          ? "PRIVATE ACCESS REQUIRED"
+                          : "DROP ACCESS REQUIRED · JOIN WAITLIST"}
+                    </div>
+                  </div>
+
+                  {/* Ultra-Clean 2-Line Caption */}
+                  <div className="mt-2.5 space-y-1 sm:mt-3">
+                    <h3 className="truncate font-sans text-[11px] font-semibold uppercase tracking-[0.03em] text-black sm:text-xs sm:tracking-[0.04em]">
+                      {displayName}
+                    </h3>
+                    <div className="flex items-center justify-between gap-1.5 font-mono text-[10px] text-[#666666] sm:gap-2 sm:text-[11px]">
+                      <span className="shrink-0 font-medium text-black tabular-nums">
+                        {isVeiled ? "PRIVATE" : formatInr(product.priceInr)}
+                      </span>
+                      {product.tier === "one-of-one" ? (
                         <span
-                          style={{ backgroundColor: accentColor }}
-                          className="absolute top-2 left-2 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]"
+                          style={{ color: accentColor }}
+                          className="shrink-0 whitespace-nowrap font-semibold"
                         >
                           1 OF 1
                         </span>
-                      ) : isVeiled ? (
-                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-black/85 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]">
-                          <Lock className="h-2.5 w-2.5" />
-                          <span>VEILED</span>
+                      ) : (
+                        <span className="shrink-0 whitespace-nowrap">
+                          {product.totalUnits} UNITS
                         </span>
-                      ) : null}
-
-                      {/* Desktop Bottom Hover Strip */}
-                      <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
-                        {isVeiled ? "PRIVATE ACCESS REQUIRED" : "VIEW PRODUCT"}
-                      </div>
+                      )}
                     </div>
+                  </div>
+                </>
+              );
 
-                    {/* Ultra-Clean 2-Line Caption */}
-                    <div className="mt-2.5 space-y-1 sm:mt-3">
-                      <h3 className="truncate font-sans text-[11px] font-semibold uppercase tracking-[0.03em] text-black sm:text-xs sm:tracking-[0.04em]">
-                        {displayName}
-                      </h3>
-                      <div className="flex items-center justify-between gap-1.5 font-mono text-[10px] text-[#666666] sm:gap-2 sm:text-[11px]">
-                        <span className="shrink-0 font-medium text-black tabular-nums">
-                          {isVeiled ? "PRIVATE" : formatInr(product.priceInr)}
-                        </span>
-                        {product.tier === "one-of-one" ? (
-                          <span
-                            style={{ color: accentColor }}
-                            className="shrink-0 whitespace-nowrap font-semibold"
-                          >
-                            1 OF 1
-                          </span>
-                        ) : (
-                          <span className="shrink-0 whitespace-nowrap">
-                            {product.totalUnits} UNITS
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+              return (
+                <article key={product._id} className="group flex flex-col">
+                  {canOpenDropProducts ? (
+                    <Link
+                      href={`/product/${product.slug}`}
+                      className="flex flex-col text-left focus:outline-none"
+                    >
+                      {cardVisual}
+                    </Link>
+                  ) : (
+                    <button
+                      suppressHydrationWarning
+                      type="button"
+                      onClick={handleLockedProductClick}
+                      aria-label={`${displayName} — drop access required`}
+                      className="flex w-full cursor-pointer flex-col text-left focus:outline-none"
+                    >
+                      {cardVisual}
+                    </button>
+                  )}
                 </article>
               );
             })}

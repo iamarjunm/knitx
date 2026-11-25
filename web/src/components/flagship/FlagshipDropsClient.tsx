@@ -40,6 +40,9 @@ export default function FlagshipDropsClient({
   }, []);
 
   const showUnlocked = mounted && isVaultUnlocked;
+  const isDropLive =
+    (mounted && config.dropPhase === "live") || drop.phase === "live";
+  const canOpenDropProducts = showUnlocked || isDropLive;
   const showUser = mounted ? user : null;
   const showPass = mounted ? waitlistPass : null;
   const accentColor = config.accentColor || "#E11D2E";
@@ -102,7 +105,7 @@ export default function FlagshipDropsClient({
   // =========================================================================
   // LOCKED STATE: ULTRA-CLEAN ACCOUNT-BASED PRIVATE DROP ACCESS GATE
   // =========================================================================
-  if (!showUnlocked) {
+  if (!canOpenDropProducts) {
     const memberEmail = showUser?.email || showPass?.email || "";
     const isQueuedOrSignedIn = Boolean(showUser || showPass);
 
@@ -123,8 +126,9 @@ export default function FlagshipDropsClient({
           </h1>
 
           <p className="mx-auto mt-3.5 max-w-lg text-sm leading-relaxed text-[#666666] sm:mt-4">
-            Selected pieces are previewed publicly. Remaining silhouettes unlock
-            automatically once your account receives access.
+            Publicly released designs are previewed below. Full product pages
+            and veiled silhouettes unlock automatically once your account
+            receives drop access or the drop goes live.
           </p>
 
           <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#666666] sm:tracking-[0.18em]">
@@ -132,7 +136,7 @@ export default function FlagshipDropsClient({
             VEILED
           </p>
 
-          {/* Publicly Previewed Product Thumbnails (3-up horizontal swipe rail on phones) */}
+          {/* Publicly Previewed Design Cards (Visual Preview Only — Product Pages Locked) */}
           {previewThumbs.length > 0 ? (
             <div
               className={cn(
@@ -141,27 +145,36 @@ export default function FlagshipDropsClient({
               )}
             >
               {previewThumbs.map(({ product, index }) => (
-                <Link
+                <div
                   key={product._id}
-                  href={`/product/${product.slug}`}
                   className={cn(
-                    "group space-y-1.5 text-left",
+                    "space-y-1.5 text-left",
                     useMobileSwipeStrip
-                      ? "w-[31%] min-w-[104px] shrink-0 snap-start sm:w-auto sm:min-w-0"
+                      ? "w-[36%] min-w-[116px] shrink-0 snap-start sm:w-auto sm:min-w-0"
                       : ""
                   )}
                 >
-                  <div className="aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
                     <img
                       src={getFlagshipProductImage(product, index, false)}
                       alt={cleanFlagshipText(product.title)}
-                      className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                      className="h-full w-full object-cover object-center"
                     />
+                    <span className="absolute top-1.5 right-1.5 inline-flex items-center gap-1 bg-white/92 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.12em] text-black">
+                      <Lock className="h-2 w-2" />
+                      <span>PREVIEW</span>
+                    </span>
                   </div>
-                  <p className="truncate font-mono text-[9px] uppercase tracking-[0.12em] text-[#666666] transition-colors group-hover:text-black">
-                    {product.serialCode}
+                  <p className="truncate font-sans text-[10px] font-semibold uppercase tracking-[0.04em] text-black">
+                    {cleanFlagshipText(product.title)}
                   </p>
-                </Link>
+                  <div className="flex items-center justify-between gap-1 font-mono text-[9px] uppercase tracking-[0.1em] text-[#666666]">
+                    <span>{product.serialCode}</span>
+                    <span className="font-medium text-black tabular-nums">
+                      {formatInr(product.priceInr)}
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           ) : null}
@@ -292,7 +305,12 @@ export default function FlagshipDropsClient({
           <div>
             <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#666666] sm:tracking-[0.22em]">
               <Unlock style={{ color: accentColor }} className="h-3 w-3 shrink-0" />
-              <span>{editionLabel} · PRIVATE ACCESS ACTIVE</span>
+              <span>
+                {editionLabel} ·{" "}
+                {isDropLive && !showUnlocked
+                  ? "DROP RELEASE LIVE"
+                  : "PRIVATE ACCESS ACTIVE"}
+              </span>
             </div>
             <h1 className="mt-2 font-poster text-4xl leading-[0.92] tracking-[0.01em] text-black uppercase break-words sm:text-6xl">
               {cleanTitle}
@@ -314,15 +332,17 @@ export default function FlagshipDropsClient({
                 <span>CORE WARDROBE</span>
               </Link>
             ) : null}
-            <button
-              suppressHydrationWarning
-              type="button"
-              onClick={() => lockVaultPreview()}
-              className="inline-flex min-h-[40px] cursor-pointer items-center gap-2 border border-black bg-black px-4 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-85 sm:px-5 sm:py-2.5"
-            >
-              <Lock className="h-3 w-3" />
-              <span>LOCK ACCESS</span>
-            </button>
+            {showUnlocked ? (
+              <button
+                suppressHydrationWarning
+                type="button"
+                onClick={() => lockVaultPreview()}
+                className="inline-flex min-h-[40px] cursor-pointer items-center gap-2 border border-black bg-black px-4 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-85 sm:px-5 sm:py-2.5"
+              >
+                <Lock className="h-3 w-3" />
+                <span>LOCK ACCESS</span>
+              </button>
+            ) : null}
           </div>
         </div>
       </section>

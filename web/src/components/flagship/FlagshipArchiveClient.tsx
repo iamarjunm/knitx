@@ -3,10 +3,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Lock } from "lucide-react";
 import type { DropCampaign, Product } from "@/lib/types";
 import { cn, formatInr } from "@/lib/utils";
 import { useStorefrontConfig } from "@/context/StorefrontConfigContext";
+import { useVault } from "@/context/VaultContext";
 import {
   buildFlagshipTimeline,
   cleanFlagshipText,
@@ -30,11 +31,17 @@ export default function FlagshipArchiveClient({
   candidateCount,
 }: FlagshipArchiveClientProps) {
   const { config } = useStorefrontConfig();
+  const { isVaultUnlocked } = useVault();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const canOpenDropProducts =
+    (mounted && isVaultUnlocked) ||
+    (mounted && config.dropPhase === "live") ||
+    drop.phase === "live";
 
   const accent =
     mounted && config.accentColor ? config.accentColor : "#E11D2E";
@@ -457,11 +464,14 @@ export default function FlagshipArchiveClient({
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {revealedPieces.map((piece, idx) => {
               const isOneOfOne = piece.tier === "one-of-one";
+              const targetHref = canOpenDropProducts
+                ? `/product/${piece.slug}`
+                : "/drops";
 
               return (
                 <Link
                   key={piece._id}
-                  href={`/product/${piece.slug}`}
+                  href={targetHref}
                   className="group block"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden border border-black/10 bg-[#F4F4F5]">
@@ -472,6 +482,12 @@ export default function FlagshipArchiveClient({
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw"
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                     />
+                    {!canOpenDropProducts ? (
+                      <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/92 px-2 py-0.5 font-mono text-[9px] font-semibold tracking-[0.14em] text-[#000000] uppercase backdrop-blur-xs">
+                        <Lock className="h-2.5 w-2.5" />
+                        <span>PREVIEW · ACCESS REQUIRED</span>
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="pt-4">
