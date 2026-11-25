@@ -58,7 +58,7 @@ export default function FlagshipShell({
     }
 
     const handleScroll = () => {
-      setScrolled(window.scrollY > 72);
+      setScrolled(window.scrollY > 36);
     };
 
     handleScroll();
@@ -159,7 +159,7 @@ export default function FlagshipShell({
           "fixed inset-x-0 z-40 h-[60px] transition-all duration-300",
           showAnnouncement ? "top-8" : "top-0",
           isTransparent
-            ? "border-b border-white/15 bg-gradient-to-b from-black/55 via-black/20 to-transparent text-white"
+            ? "border-b border-transparent bg-transparent text-white"
             : "border-b border-black/10 bg-white/95 text-black backdrop-blur-md"
         )}
       >

@@ -233,10 +233,14 @@ export default function FlagshipHomeClient({
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
 
-        {/* Sunlit High-Contrast Gradient Overlay */}
+        {/* Seamless Top & Bottom Cinematic Gradient Vignettes (Navbar melts into Hero) */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/40"
+          className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/65 via-black/25 to-transparent"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
         />
 
         {/* Bottom Flagship Overlay */}

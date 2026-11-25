@@ -154,17 +154,17 @@ export default function FlagshipProductClient({
     const secondaryEditorial =
       primaryImageSrc !== FLAGSHIP_MEDIA.dropBomberStudio
         ? {
-            id: "editorial-look",
-            src: FLAGSHIP_MEDIA.dropBomberStudio,
-            alt: `${displayTitle} editorial studio silhouette`,
-            caption: `02 · ${editionLabel} CAMPAIGN STUDY`,
-          }
+          id: "editorial-look",
+          src: FLAGSHIP_MEDIA.dropBomberStudio,
+          alt: `${displayTitle} editorial studio silhouette`,
+          caption: `02 · ${editionLabel} CAMPAIGN STUDY`,
+        }
         : {
-            id: "editorial-look-alt",
-            src: FLAGSHIP_MEDIA.bomber1of1,
-            alt: `${displayTitle} detail craftsmanship view`,
-            caption: `02 · ${editionLabel} TEXTILE STUDY`,
-          };
+          id: "editorial-look-alt",
+          src: FLAGSHIP_MEDIA.bomber1of1,
+          alt: `${displayTitle} detail craftsmanship view`,
+          caption: `02 · ${editionLabel} TEXTILE STUDY`,
+        };
 
     plates.push(secondaryEditorial);
     plates.push({
