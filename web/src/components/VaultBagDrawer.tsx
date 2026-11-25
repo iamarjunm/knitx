@@ -531,47 +531,52 @@ export default function VaultBagDrawer() {
 
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <input
+                          suppressHydrationWarning
                           type="text"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="Full Name"
                           required
-                          className="w-full border border-hairline bg-paper/50 px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none"
+                          className="w-full border border-hairline bg-paper/50 px-3.5 py-3 text-base text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none sm:py-2.5 sm:text-sm"
                         />
                         <div className="flex border border-hairline bg-paper/50 focus-within:border-ink focus-within:bg-surface">
                           <span className="flex items-center border-r border-hairline px-3 font-mono text-xs text-muted">
                             +91
                           </span>
                           <input
+                            suppressHydrationWarning
                             type="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="98XXXXXXXX"
                             required
-                            className="w-full bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:outline-none"
+                            className="w-full bg-transparent px-3 py-3 text-base text-ink placeholder:text-muted/60 focus:outline-none sm:py-2.5 sm:text-sm"
                           />
                         </div>
                       </div>
 
                       <input
+                        suppressHydrationWarning
                         type="text"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="Flat, Building, Street & Landmark"
                         required
-                        className="w-full border border-hairline bg-paper/50 px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none"
+                        className="w-full border border-hairline bg-paper/50 px-3.5 py-3 text-base text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none sm:py-2.5 sm:text-sm"
                       />
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <input
+                          suppressHydrationWarning
                           type="text"
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
                           placeholder="City"
                           required
-                          className="w-full border border-hairline bg-paper/50 px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none"
+                          className="w-full border border-hairline bg-paper/50 px-3.5 py-3 text-base text-ink placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none sm:py-2.5 sm:text-sm"
                         />
                         <input
+                          suppressHydrationWarning
                           type="text"
                           inputMode="numeric"
                           maxLength={6}
@@ -581,7 +586,7 @@ export default function VaultBagDrawer() {
                           }
                           placeholder="Pincode (6 digits)"
                           required
-                          className="w-full border border-hairline bg-paper/50 px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none"
+                          className="w-full border border-hairline bg-paper/50 px-3.5 py-3 font-mono text-base text-ink placeholder:font-sans placeholder:text-muted/60 focus:border-ink focus:bg-surface focus:outline-none sm:py-2.5 sm:text-sm"
                         />
                       </div>
 

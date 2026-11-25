@@ -148,3 +148,13 @@ body {
   background-image: radial-gradient(rgba(20, 54, 40, 0.14) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+/* Clean horizontal swipe rails on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

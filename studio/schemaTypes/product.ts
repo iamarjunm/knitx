@@ -75,9 +75,9 @@ export const product = defineType({
       title: 'Total Units in Existence',
       type: 'number',
       group: 'identity',
-      description: 'Strictly 1 for One-of-One, or 3–4 for Small-Batch.',
+      description: 'Total units allocated for this piece in the drop (configurable per product).',
       initialValue: 4,
-      validation: (Rule) => Rule.required().integer().min(1).max(10),
+      validation: (Rule) => Rule.required().integer().min(1),
     }),
     defineField({
       name: 'remainingUnits',

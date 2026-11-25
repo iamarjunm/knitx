@@ -7,8 +7,6 @@ import {
   ArrowUpRight,
   Check,
   CheckCircle2,
-  ClipboardCheck,
-  Copy,
   Download,
   Eye,
   EyeOff,
@@ -405,6 +403,12 @@ function isAdmittedStatus(status: AdminWaitlistEntry["status"]): boolean {
   return status === "admitted" || status === "invited" || status === "entered";
 }
 
+function formatCoreAccessModeLabel(mode: CoreAccessMode): string {
+  if (mode === "open") return "OPEN";
+  if (mode === "locked") return "ADMITTED DROP ACCOUNTS ONLY";
+  return "DROP 1 & COMMUNITY ACCOUNTS";
+}
+
 function generateAccessCode(seed: string): string {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
@@ -521,7 +525,6 @@ export default function AdminPortalClient() {
   const [waitlistFilter, setWaitlistFilter] = useState<
     "all" | "queued" | "admitted"
   >("all");
-  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
 
   // Submissions filter
   const [submissionFilter, setSubmissionFilter] = useState<
@@ -1089,7 +1092,7 @@ export default function AdminPortalClient() {
     setBusyAction(null);
     pushToast(
       "success",
-      `Admitted #${entry.position} ${entry.name} · Code ${nextCode}`
+      `Granted account access to #${entry.position} ${entry.name} — auto-unlocked on sign-in.`
     );
   };
 
@@ -1100,7 +1103,7 @@ export default function AdminPortalClient() {
       .slice(0, count);
 
     if (queued.length === 0) {
-      pushToast("error", "No queued collectors remaining to admit.");
+      pushToast("error", "No queued collectors remaining to grant access.");
       return;
     }
 
@@ -1128,7 +1131,7 @@ export default function AdminPortalClient() {
     setBusyAction(null);
     pushToast(
       "success",
-      `Admitted next ${queued.length} collector${queued.length === 1 ? "" : "s"} in queue.`
+      `Granted account access to next ${queued.length} collector${queued.length === 1 ? "" : "s"} in queue.`
     );
   };
 
@@ -1138,7 +1141,7 @@ export default function AdminPortalClient() {
       "Name",
       "Email",
       "Status",
-      "Access Code",
+      "Account Access",
       "Joined At",
     ];
     const rows = waitlist.map((w) => [
@@ -1146,7 +1149,7 @@ export default function AdminPortalClient() {
       w.name,
       w.email,
       isAdmittedStatus(w.status) ? "ADMITTED" : "QUEUED",
-      w.accessCode,
+      isAdmittedStatus(w.status) ? "AUTO-UNLOCKED" : "PENDING ACCESS",
       w.joinedAt,
     ]);
     const csv = [
@@ -1165,14 +1168,6 @@ export default function AdminPortalClient() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     pushToast("success", `Exported ${waitlist.length} waitlist entries to CSV.`);
-  };
-
-  const handleCopyCode = (id: string, code: string) => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      void navigator.clipboard.writeText(code);
-      setCopiedCodeId(id);
-      window.setTimeout(() => setCopiedCodeId(null), 1600);
-    }
   };
 
   // --- Vote & Submissions Handlers ---
@@ -1299,7 +1294,6 @@ export default function AdminPortalClient() {
         return (
           w.name.toLowerCase().includes(q) ||
           w.email.toLowerCase().includes(q) ||
-          w.accessCode.toLowerCase().includes(q) ||
           String(w.position).includes(q)
         );
       })
@@ -1367,7 +1361,8 @@ export default function AdminPortalClient() {
     {
       id: "core",
       label: "Core Wardrobe",
-      subtitle: "Heavyweight mineral basics, colorways & community gating",
+      subtitle:
+        "Minimalist mineral-colorway essentials with subtle signature KNITX branding",
       icon: Shirt,
       badge: CORE_COLLECTION_GARMENTS.length,
     },
@@ -1466,7 +1461,7 @@ export default function AdminPortalClient() {
                     placeholder="Enter passcode"
                     autoComplete="current-password"
                     suppressHydrationWarning
-                    className="w-full h-11 px-3.5 bg-[#F8F8F9] border border-[#E5E5E7] rounded-[2px] font-mono text-[13px] tracking-[0.08em] text-[#000000] placeholder:text-[#999999] focus:outline-none focus:border-[#000000] focus:bg-[#FFFFFF] transition-colors"
+                    className="w-full h-11 px-3.5 bg-[#F8F8F9] border border-[#E5E5E7] rounded-[2px] font-mono text-base sm:text-[13px] tracking-[0.08em] text-[#000000] placeholder:text-[#999999] focus:outline-none focus:border-[#000000] focus:bg-[#FFFFFF] transition-colors"
                   />
                 </div>
 
@@ -1530,7 +1525,7 @@ export default function AdminPortalClient() {
   // 2. AUTHENTICATED COMMAND CENTER SHELL
   // ============================================================================
   return (
-    <div className="min-h-screen bg-[#F8F8F9] text-[#000000] flex selection:bg-[#000000] selection:text-[#FFFFFF]">
+    <div className="min-h-screen overflow-x-clip bg-[#F8F8F9] text-[#000000] flex selection:bg-[#000000] selection:text-[#FFFFFF]">
       {/* Architectural Left Sidebar (Desktop) */}
       <aside className="hidden lg:flex lg:flex-col lg:w-[252px] lg:shrink-0 bg-[#FFFFFF] border-r border-[#E5E5E7] sticky top-0 h-screen">
         <div className="h-16 px-6 border-b border-[#E5E5E7] flex items-center justify-between">
@@ -1620,7 +1615,7 @@ export default function AdminPortalClient() {
 
         {/* Bottom Sidebar Actions */}
         <div className="p-4 border-t border-[#E5E5E7] space-y-2">
-          <a
+          <Link
             href="/"
             target="_blank"
             rel="noopener noreferrer"
@@ -1628,7 +1623,7 @@ export default function AdminPortalClient() {
           >
             <span>OPEN LIVE STORE</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
-          </a>
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}
@@ -1690,7 +1685,7 @@ export default function AdminPortalClient() {
               />
             </button>
 
-            <a
+            <Link
               href="/"
               target="_blank"
               rel="noopener noreferrer"
@@ -1698,7 +1693,7 @@ export default function AdminPortalClient() {
             >
               <span>OPEN LIVE STORE</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
 
             <button
               type="button"
@@ -1775,7 +1770,7 @@ export default function AdminPortalClient() {
                     {metrics.admittedCount}
                   </div>
                   <div className="mt-2 flex items-center justify-between text-[12px] text-[#666666]">
-                    <span>Access keys issued</span>
+                    <span>Auto-unlocked on sign-in</span>
                     <span className="font-mono text-[11px] tabular-nums text-[#000000]">
                       {metrics.admitRate}% rate
                     </span>
@@ -1949,7 +1944,7 @@ export default function AdminPortalClient() {
                         suppressHydrationWarning
                         className="h-8 px-3 bg-[#000000] text-[#FFFFFF] hover:bg-[#1E1E1E] rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors cursor-pointer disabled:opacity-50"
                       >
-                        ADMIT NEXT 5
+                        GRANT ACCESS TO NEXT 5
                       </button>
                       <button
                         type="button"
@@ -1969,7 +1964,9 @@ export default function AdminPortalClient() {
                           <th className="py-2.5 px-4 font-medium">#</th>
                           <th className="py-2.5 px-4 font-medium">COLLECTOR</th>
                           <th className="py-2.5 px-4 font-medium">STATUS</th>
-                          <th className="py-2.5 px-4 font-medium">CODE</th>
+                          <th className="py-2.5 px-4 font-medium">
+                            ACCOUNT ACCESS
+                          </th>
                           <th className="py-2.5 px-4 font-medium text-right">
                             ACTION
                           </th>
@@ -2005,13 +2002,21 @@ export default function AdminPortalClient() {
                                   {admitted ? "ADMITTED" : "QUEUED"}
                                 </span>
                               </td>
-                              <td className="py-3 px-4 font-mono text-[12px] tabular-nums text-[#000000]">
-                                {entry.accessCode}
+                              <td className="py-3 px-4">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                                    admitted
+                                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                      : "bg-[#F8F8F9] text-[#666666] border border-[#E5E5E7]"
+                                  }`}
+                                >
+                                  {admitted ? "AUTO-UNLOCKED" : "PENDING ACCESS"}
+                                </span>
                               </td>
                               <td className="py-3 px-4 text-right">
                                 {admitted ? (
                                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#666666]">
-                                    INVITED
+                                    ACCESS GRANTED
                                   </span>
                                 ) : (
                                   <button
@@ -2023,7 +2028,7 @@ export default function AdminPortalClient() {
                                     suppressHydrationWarning
                                     className="px-2.5 py-1 border border-[#000000] text-[#000000] hover:bg-[#000000] hover:text-[#FFFFFF] rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors cursor-pointer"
                                   >
-                                    ADMIT
+                                    GRANT ACCOUNT ACCESS
                                   </button>
                                 )}
                               </td>
@@ -2061,7 +2066,7 @@ export default function AdminPortalClient() {
                           Core Wardrobe Access
                         </span>
                         <span className="font-mono text-[11px] uppercase tracking-[0.12em] px-2 py-0.5 bg-[#F8F8F9] border border-[#E5E5E7] rounded-[2px]">
-                          {draft.coreAccessMode}
+                          {formatCoreAccessModeLabel(draft.coreAccessMode)}
                         </span>
                       </div>
                       <div className="py-3 flex items-center justify-between">
@@ -2413,7 +2418,7 @@ export default function AdminPortalClient() {
 
                     <div>
                       <label className="block font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666] mb-1.5">
-                        HERO HEADLINE OVERRIDE (LEAVE BLANK TO USE ACTIVE DROP
+                        HERO HEADLINE OVERRIDE (LEAVE EMPTY TO USE ACTIVE DROP
                         TITLE)
                       </label>
                       <input
@@ -2614,7 +2619,8 @@ export default function AdminPortalClient() {
                             KNITX CORE WARDROBE
                           </div>
                           <div className="text-[12px] text-[#666666]">
-                            Unbranded heavyweight mineral basics
+                            Minimalist mineral-colorway essentials with subtle
+                            signature KNITX branding.
                           </div>
                         </div>
                         <button
@@ -2664,10 +2670,12 @@ export default function AdminPortalClient() {
                             className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#E5E5E7] rounded-[2px] font-mono text-[11px] focus:outline-none focus:border-[#000000]"
                           >
                             <option value="community">
-                              Drop 1 & Community Waitlist
+                              Drop 1 & Community Accounts
                             </option>
-                            <option value="open">Open Public Access</option>
-                            <option value="locked">Code Only</option>
+                            <option value="open">Open</option>
+                            <option value="locked">
+                              Admitted Drop Accounts Only
+                            </option>
                           </select>
                         </div>
                       </div>
@@ -2687,40 +2695,17 @@ export default function AdminPortalClient() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block font-mono text-[10px] uppercase tracking-[0.14em] text-[#666666] mb-1">
-                            MASTER DROP ACCESS CODE
-                          </label>
-                          <input
-                            type="text"
-                            value={draft.masterAccessCode}
-                            onChange={(e) =>
-                              patchDraft(
-                                "masterAccessCode",
-                                e.target.value.toUpperCase()
-                              )
-                            }
-                            suppressHydrationWarning
-                            className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#E5E5E7] rounded-[2px] font-mono text-[12px] uppercase focus:outline-none focus:border-[#000000]"
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-mono text-[10px] uppercase tracking-[0.14em] text-[#666666] mb-1">
-                            CORE COMMUNITY CODE
-                          </label>
-                          <input
-                            type="text"
-                            value={draft.coreAccessCode}
-                            onChange={(e) =>
-                              patchDraft(
-                                "coreAccessCode",
-                                e.target.value.toUpperCase()
-                              )
-                            }
-                            suppressHydrationWarning
-                            className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#E5E5E7] rounded-[2px] font-mono text-[12px] uppercase focus:outline-none focus:border-[#000000]"
-                          />
+                      <div className="flex items-start gap-2.5 p-3 bg-[#FFFFFF] border border-emerald-200 rounded-[2px]">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5">
+                          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                            ACCOUNT-BASED ACCESS ACTIVE
+                          </div>
+                          <p className="text-[12px] text-[#000000] leading-snug">
+                            Account-Based Access Active — Admitted accounts
+                            unlock Drops &amp; Core automatically upon sign-in,
+                            with no access codes required.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -2951,7 +2936,7 @@ export default function AdminPortalClient() {
                             </div>
                             <div className="font-mono text-[9px] text-[#666666] truncate">
                               Opens {formatShortDate(computedCoreUnlockIso, mounted)} ·{" "}
-                              {draft.coreAccessMode.toUpperCase()}
+                              {formatCoreAccessModeLabel(draft.coreAccessMode)}
                             </div>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
@@ -3293,9 +3278,11 @@ export default function AdminPortalClient() {
                       </span>
                     </div>
                     <p className="text-[12px] text-[#666666]">
-                      Unlocks automatically {draft.coreLaunchOffsetDays} days
-                      after {draft.activeDropNumber} (
-                      {formatShortDate(computedCoreUnlockIso, mounted)})
+                      Minimalist mineral-colorway essentials with subtle
+                      signature KNITX branding. Unlocks automatically{" "}
+                      {draft.coreLaunchOffsetDays} days after{" "}
+                      {draft.activeDropNumber} (
+                      {formatShortDate(computedCoreUnlockIso, mounted)}).
                     </p>
                   </div>
 
@@ -3320,18 +3307,18 @@ export default function AdminPortalClient() {
                         [
                           {
                             id: "community",
-                            label: "DROP 1 & COMMUNITY",
-                            sub: "Waitlist & Drop 1 holders",
+                            label: "DROP 1 & COMMUNITY ACCOUNTS",
+                            sub: "Waitlist & Drop 1 accounts",
                           },
                           {
                             id: "open",
-                            label: "OPEN PUBLIC",
+                            label: "OPEN",
                             sub: "Direct public checkout",
                           },
                           {
                             id: "locked",
-                            label: "CODE ONLY",
-                            sub: `Requires ${draft.coreAccessCode}`,
+                            label: "ADMITTED DROP ACCOUNTS ONLY",
+                            sub: "Auto-unlocked upon account sign-in",
                           },
                         ] as const
                       ).map((mode) => {
@@ -3458,7 +3445,7 @@ export default function AdminPortalClient() {
                 </div>
               </div>
 
-              {/* 6 Heavyweight Plain Core Silhouettes Grid */}
+              {/* 6 Heavyweight Branded Core Silhouettes Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredCoreGarments.map((garment) => {
                   const chosenId =
@@ -3605,7 +3592,7 @@ export default function AdminPortalClient() {
                         type="text"
                         value={waitlistQuery}
                         onChange={(e) => setWaitlistQuery(e.target.value)}
-                        placeholder="Search name, email, code..."
+                        placeholder="Search name, email, queue #..."
                         suppressHydrationWarning
                         className="h-9 pl-9 pr-3 w-64 bg-[#F8F8F9] border border-[#E5E5E7] rounded-[2px] text-[12px] focus:outline-none focus:border-[#000000] focus:bg-[#FFFFFF]"
                       />
@@ -3654,7 +3641,7 @@ export default function AdminPortalClient() {
                       suppressHydrationWarning
                       className="h-9 px-4 bg-[#000000] text-[#FFFFFF] hover:bg-[#1E1E1E] rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors cursor-pointer disabled:opacity-50"
                     >
-                      ADMIT NEXT 5 IN QUEUE
+                      GRANT ACCESS TO NEXT 5
                     </button>
                   </div>
                 </div>
@@ -3667,7 +3654,7 @@ export default function AdminPortalClient() {
                         <th className="py-3 px-4 font-medium">COLLECTOR</th>
                         <th className="py-3 px-4 font-medium">JOINED</th>
                         <th className="py-3 px-4 font-medium">STATUS</th>
-                        <th className="py-3 px-4 font-medium">ACCESS CODE</th>
+                        <th className="py-3 px-4 font-medium">ACCOUNT ACCESS</th>
                         <th className="py-3 px-4 font-medium text-right">
                           ADMISSION
                         </th>
@@ -3707,30 +3694,30 @@ export default function AdminPortalClient() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <div className="inline-flex items-center gap-1.5 font-mono text-[12px] text-[#000000]">
-                                <span>{entry.accessCode}</span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCopyCode(entry._id, entry.accessCode)
-                                  }
-                                  title="Copy access code"
-                                  suppressHydrationWarning
-                                  className="p-1 text-[#666666] hover:text-[#000000] cursor-pointer"
-                                >
-                                  {copiedCodeId === entry._id ? (
-                                    <ClipboardCheck className="w-3.5 h-3.5 text-emerald-700" />
-                                  ) : (
-                                    <Copy className="w-3.5 h-3.5" />
-                                  )}
-                                </button>
-                              </div>
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                                  admitted
+                                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                    : "bg-[#F8F8F9] text-[#666666] border border-[#E5E5E7]"
+                                }`}
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    admitted ? "bg-emerald-600" : "bg-[#999999]"
+                                  }`}
+                                />
+                                <span>
+                                  {admitted
+                                    ? "AUTO-UNLOCKED"
+                                    : "PENDING ACCESS"}
+                                </span>
+                              </span>
                             </td>
                             <td className="py-3 px-4 text-right">
                               {admitted ? (
                                 <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-[2px]">
                                   <Check className="w-3 h-3" />
-                                  <span>CODE ACTIVE</span>
+                                  <span>ACCESS GRANTED</span>
                                 </span>
                               ) : (
                                 <button
@@ -3742,7 +3729,7 @@ export default function AdminPortalClient() {
                                   suppressHydrationWarning
                                   className="px-3 py-1.5 bg-[#000000] text-[#FFFFFF] hover:bg-[#1E1E1E] rounded-[2px] font-mono text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors cursor-pointer disabled:opacity-50"
                                 >
-                                  CALL NUMBER / ADMIT
+                                  GRANT ACCOUNT ACCESS
                                 </button>
                               )}
                             </td>
@@ -4357,7 +4344,6 @@ export default function AdminPortalClient() {
                   <input
                     type="number"
                     min={1}
-                    max={50}
                     value={garmentForm.totalUnits}
                     onChange={(e) =>
                       setGarmentForm((p) => ({

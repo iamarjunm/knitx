@@ -116,7 +116,10 @@ export function VaultProvider({ children }: { children: React.ReactNode }) {
               JSON.stringify(data.pass)
             );
           }
-          if (data.pass.status === "entered") {
+          if (
+            data.pass.status === "entered" ||
+            data.pass.status === "invited"
+          ) {
             setIsVaultUnlocked(true);
             if (typeof window !== "undefined") {
               window.localStorage.setItem(VAULT_UNLOCKED_STORAGE_KEY, "true");

@@ -2,9 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Check, Lock, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Lock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useVault } from "@/context/VaultContext";
 import { useStorefrontConfig } from "@/context/StorefrontConfigContext";
@@ -35,6 +33,15 @@ const CORE_PALETTE_SWATCHES = [
   { id: "washed-obsidian", name: "Washed Obsidian", hex: "#161618", border: "#161618" },
   { id: "sage-stone", name: "Sage Stone", hex: "#6D7469", border: "#6D7469" },
 ] as const;
+
+const HARDCODED_COUNT_PATTERN =
+  /\b(10\s*pieces|10\s*silhouettes|1[–-]4\s*units|3[–-]4\s*units|five\s*revealed|five\s*sealed|5\s*revealed|5\s*veiled)\b/i;
+
+const UNBRANDED_CORE_PATTERN =
+  /\b(unbranded|zero-logo|zero branding|blanks?)\b/i;
+
+const CORE_DEFAULT_DESCRIPTION =
+  "Heavyweight minimalist essentials in curated mineral colorways with subtle signature KNITX branding.";
 
 function computeCountdown(targetIso: string): CountdownParts {
   const parsed = Date.parse(targetIso);
@@ -80,16 +87,9 @@ export default function FlagshipHomeClient({
   products: Product[];
   candidateCount: number;
 }) {
-  const router = useRouter();
-  const { user } = useAuth();
+  const { user, setAuthModalOpen } = useAuth();
   const { config } = useStorefrontConfig();
-  const {
-    waitlistPass,
-    isVaultUnlocked,
-    joinWaitlist,
-    unlockVaultWithCode,
-    addToCart,
-  } = useVault();
+  const { waitlistPass, isVaultUnlocked, joinWaitlist } = useVault();
 
   const [mounted, setMounted] = useState(false);
   const [countdown, setCountdown] = useState<CountdownParts | null>(null);
@@ -98,22 +98,11 @@ export default function FlagshipHomeClient({
     (typeof CORE_PALETTE_SWATCHES)[number]
   >(CORE_PALETTE_SWATCHES[2]);
 
-  // Quick-view slide-over state
-  const [selectedProduct, setSelectedProduct] = useState<{
-    product: Product;
-    index: number;
-  } | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string>("");
-  const [bagNotice, setBagNotice] = useState<string | null>(null);
-
-  // Waitlist & access code state
+  // Waitlist state
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
   const [waitlistError, setWaitlistError] = useState<string | null>(null);
-  const [showCodeBar, setShowCodeBar] = useState(false);
-  const [accessCodeInput, setAccessCodeInput] = useState("");
-  const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
 
   const effectiveLaunchDate = config.dropLaunchDate || drop.launchDate;
 
@@ -137,22 +126,10 @@ export default function FlagshipHomeClient({
     }
   }, [mounted, user]);
 
-  useEffect(() => {
-    if (!selectedProduct) return;
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelectedProduct(null);
-      }
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [selectedProduct]);
-
   const showUnlocked = mounted && isVaultUnlocked;
+  const showUser = mounted ? user : null;
   const showPass = mounted ? waitlistPass : null;
   const accentColor = config.accentColor || "#E11D2E";
-  const masterCode = (config.masterAccessCode || "KNITX-001").trim();
-  const coreCode = (config.coreAccessCode || "KNITX-CORE").trim();
   const gridColsClass =
     config.gridColumns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
 
@@ -162,6 +139,24 @@ export default function FlagshipHomeClient({
   const heroTitle =
     config.heroTitleOverride?.trim() ||
     cleanFlagshipText(config.activeDropTitle || drop.title);
+
+  const heroEyebrow =
+    config.heroEyebrow?.trim() &&
+    !HARDCODED_COUNT_PATTERN.test(config.heroEyebrow)
+      ? config.heroEyebrow.trim()
+      : `${products.length} PIECES · CURATED LIMITED-EDITION RUNS`;
+
+  const heroSubtitle =
+    config.heroSubtitle?.trim() &&
+    !HARDCODED_COUNT_PATTERN.test(config.heroSubtitle)
+      ? config.heroSubtitle.trim()
+      : "Curated limited-edition runs cut to order with zero restocks.";
+
+  const coreSubtitleText =
+    config.coreSubtitle?.trim() &&
+    !UNBRANDED_CORE_PATTERN.test(config.coreSubtitle)
+      ? config.coreSubtitle.trim()
+      : CORE_DEFAULT_DESCRIPTION;
 
   const coreLaunchLabel = useMemo(() => {
     if (!mounted) return "";
@@ -178,6 +173,14 @@ export default function FlagshipHomeClient({
     config.coreLaunchDateOverride,
   ]);
 
+  const { revealedCount, veiledCount } = useMemo(() => {
+    const revealed = products.filter((p) => !p.isMystery).length;
+    return {
+      revealedCount: revealed,
+      veiledCount: Math.max(0, products.length - revealed),
+    };
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     return products
       .map((product, index) => ({ product, index }))
@@ -188,31 +191,6 @@ export default function FlagshipHomeClient({
         return true;
       });
   }, [products, activeFilter]);
-
-  const openQuickView = (product: Product, index: number) => {
-    const isVeiled = product.isMystery && !showUnlocked;
-    if (isVeiled) {
-      router.push("/drops");
-      return;
-    }
-    setSelectedProduct({ product, index });
-    setSelectedSize(product.sizes[0] || "OS");
-    setBagNotice(null);
-  };
-
-  const handleQuickAddToBag = () => {
-    if (!selectedProduct) return;
-    const sizeToUse = selectedSize || selectedProduct.product.sizes[0] || "OS";
-    const result = addToCart(selectedProduct.product, sizeToUse);
-    if (!result.ok) {
-      setBagNotice(
-        cleanFlagshipText(result.message || "Unable to reserve this garment.")
-      );
-      return;
-    }
-    setBagNotice(null);
-    setSelectedProduct(null);
-  };
 
   const handleWaitlistSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -237,33 +215,6 @@ export default function FlagshipHomeClient({
     }
   };
 
-  const handleAccessCodeSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAccessCodeError(null);
-    const normalized = accessCodeInput.trim().toUpperCase();
-    const ok = unlockVaultWithCode(normalized);
-    if (!ok) {
-      setAccessCodeError(
-        "Invalid access code. Check your invitation or use the preview key."
-      );
-      return;
-    }
-    if (config.coreEnabled && normalized === coreCode.toUpperCase()) {
-      router.push("/core");
-      return;
-    }
-    router.push("/drops");
-  };
-
-  const handleQuickCodeUnlock = (code: string, destination: string) => {
-    setAccessCodeInput(code);
-    setAccessCodeError(null);
-    const ok = unlockVaultWithCode(code);
-    if (ok) {
-      router.push(destination);
-    }
-  };
-
   const showCoCreation = config.showVoteSection || config.showSubmitSection;
   const coCreationCols =
     config.showVoteSection && config.showSubmitSection
@@ -275,49 +226,49 @@ export default function FlagshipHomeClient({
       {/* ===================================================================== */}
       {/* ACT 1: FULL-VIEWPORT 100SVH EDGE-TO-EDGE CAMPAIGN HERO                */}
       {/* ===================================================================== */}
-      <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden bg-black">
+      <section className="relative flex min-h-[100svh] w-full flex-col justify-end overflow-hidden bg-black pt-28 pb-9 sm:pt-32 sm:pb-14 lg:h-[100svh] lg:min-h-[680px]">
         <img
           src={FLAGSHIP_MEDIA.heroCampaign}
           alt={heroTitle}
-          className="h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
 
         {/* Sunlit High-Contrast Gradient Overlay */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/35"
+          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/40"
         />
 
         {/* Bottom Flagship Overlay */}
-        <div className="absolute inset-x-0 bottom-0 z-10">
-          <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-4 pb-10 sm:px-8 sm:pb-14 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative z-10 w-full">
+          <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-4 sm:gap-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-4xl">
-              <div className="inline-flex items-center gap-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-white/95">
+              <div className="inline-flex items-start gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-white/95 sm:items-center sm:gap-2.5 sm:text-[11px] sm:tracking-[0.2em]">
                 <span
                   aria-hidden="true"
                   style={{ backgroundColor: accentColor }}
-                  className="h-2 w-2 shrink-0"
+                  className="mt-1 h-2 w-2 shrink-0 sm:mt-0"
                 />
                 <span>
-                  {editionLabel} · {config.heroEyebrow}
+                  {editionLabel} · {heroEyebrow}
                 </span>
               </div>
 
-              <h1 className="mt-3 font-poster text-6xl leading-[0.86] tracking-[0.01em] text-white uppercase sm:text-8xl lg:text-[116px]">
+              <h1 className="mt-3 font-poster text-[52px] leading-[0.88] tracking-[0.01em] text-white uppercase break-words sm:text-8xl sm:leading-[0.86] lg:text-[112px]">
                 {heroTitle}
               </h1>
 
-              {config.heroSubtitle ? (
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base">
-                  {config.heroSubtitle}
+              {heroSubtitle ? (
+                <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-white/85 sm:mt-4 sm:text-base">
+                  {heroSubtitle}
                 </p>
               ) : null}
 
-              <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="mt-6 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                 {showUnlocked ? (
                   <Link
                     href="/drops"
-                    className="inline-flex items-center gap-2.5 bg-white px-7 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white"
+                    className="inline-flex min-h-[46px] w-full items-center justify-center gap-2.5 bg-white px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white sm:w-auto sm:px-7"
                   >
                     <span>ENTER DROP</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -325,7 +276,7 @@ export default function FlagshipHomeClient({
                 ) : (
                   <a
                     href="#waitlist"
-                    className="inline-flex items-center gap-2.5 bg-white px-7 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white"
+                    className="inline-flex min-h-[46px] w-full items-center justify-center gap-2.5 bg-white px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white sm:w-auto sm:px-7"
                   >
                     <span>{config.heroCtaPrimary || "JOIN WAITLIST"}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -334,7 +285,7 @@ export default function FlagshipHomeClient({
 
                 <Link
                   href="/drops"
-                  className="inline-flex items-center gap-2 border border-white/85 bg-black/25 px-7 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black"
+                  className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 border border-white/85 bg-black/25 px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:w-auto sm:px-7"
                 >
                   <span>{config.heroCtaSecondary || "EXPLORE DROPS"}</span>
                 </Link>
@@ -348,7 +299,7 @@ export default function FlagshipHomeClient({
               </span>
               <div
                 aria-label="Countdown to next drop window"
-                className="mt-2 font-mono text-2xl font-semibold tracking-[0.12em] text-white tabular-nums sm:text-3xl"
+                className="mt-1.5 font-mono text-xl font-semibold tracking-[0.1em] text-white tabular-nums sm:mt-2 sm:text-3xl sm:tracking-[0.12em]"
               >
                 {countdown
                   ? `${countdown.days} : ${countdown.hours} : ${countdown.minutes} : ${countdown.seconds}`
@@ -365,25 +316,37 @@ export default function FlagshipHomeClient({
       {/* ===================================================================== */}
       {/* ACT 2: PURE-WHITE SSENSE / BLUORNG CURRENT DROP LOOKBOOK GRID         */}
       {/* ===================================================================== */}
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-12 sm:py-20">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-8">
           {/* Clean Top Bar */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-black/10 pb-5">
-            <div className="flex items-baseline gap-3">
-              <h2 className="font-syne text-xl font-extrabold uppercase tracking-[-0.01em] text-black sm:text-2xl">
-                CURRENT DROP
-              </h2>
-              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#666666]">
-                ({products.length} PIECES)
-              </span>
+          <div className="mb-6 flex flex-col gap-4 border-b border-black/10 pb-4 sm:mb-8 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-baseline justify-between gap-3">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2 className="font-syne text-xl font-extrabold uppercase tracking-[-0.01em] text-black sm:text-2xl">
+                  CURRENT DROP
+                </h2>
+                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#666666] sm:text-xs">
+                  {!showUnlocked && veiledCount > 0
+                    ? `(${products.length} PIECES · ${revealedCount} PREVIEWED · ${veiledCount} VEILED)`
+                    : `(${products.length} PIECES)`}
+                </span>
+              </div>
+
+              <Link
+                href="/drops"
+                className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-65 lg:hidden"
+              >
+                <span>VIEW ALL</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="no-scrollbar -mx-4 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:gap-2.5 sm:px-0">
               {(
                 [
                   { id: "all", label: "ALL" },
-                  { id: "revealed", label: "REVEALED" },
-                  { id: "veiled", label: "UNVEILED ON ENTRY" },
+                  { id: "revealed", label: "PREVIEWED" },
+                  { id: "veiled", label: "VEILED" },
                   { id: "one-of-one", label: "1 OF 1" },
                 ] as const
               ).map((tab) => {
@@ -395,7 +358,7 @@ export default function FlagshipHomeClient({
                     type="button"
                     onClick={() => setActiveFilter(tab.id)}
                     className={cn(
-                      "cursor-pointer px-3.5 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
+                      "min-h-[36px] shrink-0 cursor-pointer whitespace-nowrap px-3.5 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
                       isSelected
                         ? "bg-black text-white"
                         : "bg-[#F4F4F5] text-[#666666] hover:bg-neutral-200 hover:text-black"
@@ -408,7 +371,7 @@ export default function FlagshipHomeClient({
 
               <Link
                 href="/drops"
-                className="ml-1 inline-flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-65"
+                className="ml-1 hidden shrink-0 items-center gap-1.5 whitespace-nowrap font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-opacity hover:opacity-65 lg:inline-flex"
               >
                 <span>VIEW ALL</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -419,7 +382,7 @@ export default function FlagshipHomeClient({
           {/* Edge-to-Edge Studio Lookbook Grid (3 or 4 columns per Admin Config) */}
           <div
             className={cn(
-              "grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 sm:gap-y-12",
+              "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12",
               gridColsClass
             )}
           >
@@ -433,66 +396,69 @@ export default function FlagshipHomeClient({
               const displayName = isVeiled
                 ? `VEILED SILHOUETTE ${String(index + 1).padStart(2, "0")}`
                 : cleanFlagshipText(product.title);
+              const cardHref = isVeiled ? "/drops" : `/product/${product.slug}`;
 
               return (
                 <article key={product._id} className="group flex flex-col">
-                  <button
-                    suppressHydrationWarning
-                    type="button"
-                    onClick={() => openQuickView(product, index)}
-                    className="relative aspect-[3/4] w-full cursor-pointer overflow-hidden bg-[#F4F4F5] text-left focus:outline-none"
+                  <Link
+                    href={cardHref}
+                    className="flex flex-col text-left focus:outline-none"
                   >
-                    <img
-                      src={imgSrc}
-                      alt={displayName}
-                      className={cn(
-                        "h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]",
-                        isVeiled ? "brightness-90 contrast-105" : ""
-                      )}
-                    />
+                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
+                      <img
+                        src={imgSrc}
+                        alt={displayName}
+                        className={cn(
+                          "h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]",
+                          isVeiled ? "brightness-90 contrast-105" : ""
+                        )}
+                      />
 
-                    {/* Minimal Corner Marker */}
-                    {product.tier === "one-of-one" && !isVeiled ? (
-                      <span
-                        style={{ backgroundColor: accentColor }}
-                        className="absolute top-3 left-3 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white"
-                      >
-                        1 OF 1
-                      </span>
-                    ) : isVeiled ? (
-                      <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-black/85 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-white">
-                        <Lock className="h-2.5 w-2.5" />
-                        <span>VEILED</span>
-                      </span>
-                    ) : null}
-
-                    {/* Desktop Bottom Hover Strip */}
-                    <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
-                      {isVeiled ? "PRIVATE ACCESS REQUIRED" : "QUICK VIEW"}
-                    </div>
-                  </button>
-
-                  {/* Ultra-Clean 2-Line Caption */}
-                  <div className="mt-3 space-y-1">
-                    <h3 className="truncate font-sans text-xs font-semibold uppercase tracking-[0.04em] text-black">
-                      {displayName}
-                    </h3>
-                    <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-[#666666]">
-                      <span className="text-black">
-                        {isVeiled ? "PRIVATE" : formatInr(product.priceInr)}
-                      </span>
-                      {product.tier === "one-of-one" ? (
+                      {/* Minimal Corner Marker */}
+                      {product.tier === "one-of-one" && !isVeiled ? (
                         <span
-                          style={{ color: accentColor }}
-                          className="font-semibold"
+                          style={{ backgroundColor: accentColor }}
+                          className="absolute top-2 left-2 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]"
                         >
                           1 OF 1
                         </span>
-                      ) : (
-                        <span>{product.totalUnits} UNITS</span>
-                      )}
+                      ) : isVeiled ? (
+                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-black/85 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white sm:top-3 sm:left-3 sm:px-2 sm:tracking-[0.16em]">
+                          <Lock className="h-2.5 w-2.5" />
+                          <span>VEILED</span>
+                        </span>
+                      ) : null}
+
+                      {/* Desktop Bottom Hover Strip */}
+                      <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
+                        {isVeiled ? "PRIVATE ACCESS REQUIRED" : "VIEW PRODUCT"}
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Ultra-Clean 2-Line Caption */}
+                    <div className="mt-2.5 space-y-1 sm:mt-3">
+                      <h3 className="truncate font-sans text-[11px] font-semibold uppercase tracking-[0.03em] text-black sm:text-xs sm:tracking-[0.04em]">
+                        {displayName}
+                      </h3>
+                      <div className="flex items-center justify-between gap-1.5 font-mono text-[10px] text-[#666666] sm:gap-2 sm:text-[11px]">
+                        <span className="shrink-0 font-medium text-black tabular-nums">
+                          {isVeiled ? "PRIVATE" : formatInr(product.priceInr)}
+                        </span>
+                        {product.tier === "one-of-one" ? (
+                          <span
+                            style={{ color: accentColor }}
+                            className="shrink-0 whitespace-nowrap font-semibold"
+                          >
+                            1 OF 1
+                          </span>
+                        ) : (
+                          <span className="shrink-0 whitespace-nowrap">
+                            {product.totalUnits} UNITS
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
                 </article>
               );
             })}
@@ -504,16 +470,16 @@ export default function FlagshipHomeClient({
       {/* ACT 3: KNITX CORE — ESSENTIAL WARDROBE EDITORIAL FEATURE              */}
       {/* ===================================================================== */}
       {config.coreEnabled ? (
-        <section className="border-y border-black/10 bg-[#F4F4F5] py-16 sm:py-24">
+        <section className="border-y border-black/10 bg-[#F4F4F5] py-12 sm:py-24">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-8">
-            <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
+            <div className="grid grid-cols-1 gap-8 sm:gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
               {/* Left (5 cols): Editorial Copy, Interactive Mineral Swatches & CTA */}
               <div className="flex flex-col lg:col-span-5">
-                <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#666666]">
+                <div className="inline-flex items-start gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#666666] sm:items-center sm:tracking-[0.2em]">
                   <span
                     aria-hidden="true"
                     style={{ backgroundColor: accentColor }}
-                    className="h-1.5 w-1.5 shrink-0"
+                    className="mt-1 h-1.5 w-1.5 shrink-0 sm:mt-0"
                   />
                   <span>
                     RELEASING {config.coreLaunchOffsetDays} DAYS AFTER DROP 01 ·
@@ -521,16 +487,16 @@ export default function FlagshipHomeClient({
                   </span>
                 </div>
 
-                <h2 className="mt-4 font-syne text-4xl leading-[0.94] font-extrabold uppercase tracking-[-0.025em] text-black sm:text-5xl">
+                <h2 className="mt-3.5 font-syne text-3xl leading-[0.95] font-extrabold uppercase tracking-[-0.025em] text-black break-words sm:mt-4 sm:text-5xl sm:leading-[0.94]">
                   {config.coreTitle}
                 </h2>
 
-                <p className="mt-4 text-sm leading-relaxed text-[#666666] sm:text-[15px]">
-                  {config.coreSubtitle}
+                <p className="mt-3.5 text-sm leading-relaxed text-[#666666] sm:mt-4 sm:text-[15px]">
+                  {coreSubtitleText}
                 </p>
 
                 {/* Interactive Mineral Colorway Swatch Selector */}
-                <div className="mt-7 border-y border-black/10 py-5">
+                <div className="mt-6 border-y border-black/10 py-4 sm:mt-7 sm:py-5">
                   <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em]">
                     <span className="text-[#666666]">MINERAL PALETTE</span>
                     <span className="font-semibold text-black">
@@ -538,7 +504,7 @@ export default function FlagshipHomeClient({
                     </span>
                   </div>
 
-                  <div className="mt-3.5 flex flex-wrap items-center gap-3">
+                  <div className="mt-3.5 flex flex-wrap items-center gap-2.5 sm:gap-3">
                     {CORE_PALETTE_SWATCHES.map((tone) => {
                       const isSelected = activeCoreTone.id === tone.id;
                       return (
@@ -551,7 +517,7 @@ export default function FlagshipHomeClient({
                           aria-label={`Select ${tone.name} tone`}
                           title={tone.name}
                           className={cn(
-                            "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border transition-transform duration-200 hover:scale-105",
+                            "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-transform duration-200 hover:scale-105 sm:h-9 sm:w-9",
                             isSelected
                               ? "border-black ring-2 ring-black/15"
                               : "border-transparent"
@@ -571,7 +537,7 @@ export default function FlagshipHomeClient({
                 </div>
 
                 {/* Live Community Access Badge */}
-                <div className="mt-6 border border-black/10 bg-white px-4 py-3.5">
+                <div className="mt-5 border border-black/10 bg-white px-4 py-3.5 sm:mt-6">
                   <div className="flex items-start gap-2.5">
                     <span
                       aria-hidden="true"
@@ -580,21 +546,21 @@ export default function FlagshipHomeClient({
                     />
                     <div className="space-y-1">
                       <p className="font-sans text-xs font-semibold text-black">
-                        Included automatically for Drop 1 &amp; community
-                        waitlist members
+                        Included automatically once your account receives drop
+                        access
                       </p>
-                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#666666]">
-                        6 UNBRANDED SILHOUETTES · 320–480 GSM
+                      <p className="font-mono text-[10px] leading-relaxed uppercase tracking-[0.14em] text-[#666666] sm:tracking-[0.16em]">
+                        SUBTLE SIGNATURE KNITX BRANDING · 320–480 GSM
                         {coreLaunchLabel ? ` · OPENS ${coreLaunchLabel}` : ""}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-7 flex flex-wrap items-center gap-3">
+                <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-7">
                   <Link
                     href="/core"
-                    className="inline-flex items-center gap-2.5 bg-black px-7 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85"
+                    className="inline-flex min-h-[48px] w-full items-center justify-center gap-2.5 bg-black px-7 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85 sm:w-auto"
                   >
                     <span>EXPLORE CORE WARDROBE</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -603,7 +569,7 @@ export default function FlagshipHomeClient({
               </div>
 
               {/* Right (7 cols): Asymmetric Studio Editorial Photo Spread */}
-              <div className="grid grid-cols-12 gap-3 sm:gap-4 lg:col-span-7">
+              <div className="grid grid-cols-12 gap-2.5 sm:gap-4 lg:col-span-7">
                 <Link
                   href="/core"
                   className="group relative col-span-7 overflow-hidden bg-white"
@@ -615,12 +581,12 @@ export default function FlagshipHomeClient({
                       className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                     />
                   </div>
-                  <div className="absolute bottom-3 left-3 bg-white/95 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-black backdrop-blur-sm">
+                  <div className="absolute bottom-2 left-2 bg-white/95 px-2 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.16em] text-black backdrop-blur-sm sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[9px] sm:tracking-[0.18em]">
                     CORE 01 · CAMPAIGN
                   </div>
                 </Link>
 
-                <div className="col-span-5 flex flex-col gap-3 sm:gap-4">
+                <div className="col-span-5 flex flex-col gap-2.5 sm:gap-4">
                   <Link
                     href="/core"
                     className="group relative flex-1 overflow-hidden bg-white"
@@ -632,8 +598,8 @@ export default function FlagshipHomeClient({
                         className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                       />
                     </div>
-                    <div className="absolute bottom-2.5 left-2.5 bg-white/95 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-black">
-                      6 TONES
+                    <div className="absolute bottom-2 left-2 bg-white/95 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.14em] text-black sm:bottom-2.5 sm:left-2.5 sm:px-2 sm:text-[9px] sm:tracking-[0.16em]">
+                      {CORE_PALETTE_SWATCHES.length} TONES
                     </div>
                   </Link>
 
@@ -648,7 +614,7 @@ export default function FlagshipHomeClient({
                         className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                       />
                     </div>
-                    <div className="absolute bottom-2.5 left-2.5 bg-black/85 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-white">
+                    <div className="absolute bottom-2 left-2 bg-black/85 px-1.5 py-0.5 font-mono text-[8px] font-semibold uppercase tracking-[0.14em] text-white sm:bottom-2.5 sm:left-2.5 sm:px-2 sm:text-[9px] sm:tracking-[0.16em]">
                       460 GSM
                     </div>
                   </Link>
@@ -666,7 +632,7 @@ export default function FlagshipHomeClient({
         {/* Left: ONE OF ONE */}
         <Link
           href="/drops"
-          className="group relative flex min-h-[66vh] w-full items-end overflow-hidden bg-black"
+          className="group relative flex min-h-[48svh] w-full items-end overflow-hidden bg-black sm:min-h-[68vh]"
         >
           <img
             src={FLAGSHIP_MEDIA.dropBomberStudio}
@@ -677,20 +643,20 @@ export default function FlagshipHomeClient({
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
           />
-          <div className="relative z-10 w-full p-6 sm:p-10 lg:p-12">
+          <div className="relative z-10 w-full p-5 sm:p-10 lg:p-12">
             <span
               style={{ backgroundColor: accentColor }}
               className="inline-block px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white"
             >
               COLLECTOR TIER
             </span>
-            <h2 className="mt-3 font-poster text-5xl leading-[0.88] tracking-[0.01em] text-white uppercase sm:text-6xl lg:text-7xl">
+            <h2 className="mt-3 font-poster text-4xl leading-[0.88] tracking-[0.01em] text-white uppercase break-words sm:text-6xl lg:text-7xl">
               ONE OF ONE
             </h2>
             <p className="mt-2.5 max-w-sm text-sm text-white/80">
               Only one exists worldwide. Individually cut and never remade.
             </p>
-            <span className="mt-5 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75">
+            <span className="mt-4 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75 sm:mt-5">
               <span>EXPLORE 1-OF-1S</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </span>
@@ -700,7 +666,7 @@ export default function FlagshipHomeClient({
         {/* Right: SMALL BATCH */}
         <Link
           href="/drops"
-          className="group relative flex min-h-[66vh] w-full items-end overflow-hidden bg-black"
+          className="group relative flex min-h-[48svh] w-full items-end overflow-hidden bg-black sm:min-h-[68vh]"
         >
           <img
             src={FLAGSHIP_MEDIA.chainStitchTee}
@@ -711,17 +677,17 @@ export default function FlagshipHomeClient({
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
           />
-          <div className="relative z-10 w-full p-6 sm:p-10 lg:p-12">
+          <div className="relative z-10 w-full p-5 sm:p-10 lg:p-12">
             <span className="inline-block border border-white/55 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
               NUMBERED EDITION
             </span>
-            <h2 className="mt-3 font-poster text-5xl leading-[0.88] tracking-[0.01em] text-white uppercase sm:text-6xl lg:text-7xl">
+            <h2 className="mt-3 font-poster text-4xl leading-[0.88] tracking-[0.01em] text-white uppercase break-words sm:text-6xl lg:text-7xl">
               SMALL BATCH
             </h2>
             <p className="mt-2.5 max-w-sm text-sm text-white/80">
-              3–4 units per design. Heavyweight combed Indian cotton.
+              Curated limited-batch quantities. Heavyweight Indian cotton.
             </p>
-            <span className="mt-5 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75">
+            <span className="mt-4 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75 sm:mt-5">
               <span>EXPLORE SMALL BATCH</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </span>
@@ -733,29 +699,29 @@ export default function FlagshipHomeClient({
       {/* ACT 5: ARCHITECTURAL ATELIER BAND                                     */}
       {/* ===================================================================== */}
       {config.showAtelierSection ? (
-        <section className="bg-white py-16 sm:py-24">
+        <section className="bg-white py-12 sm:py-24">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex flex-col gap-5 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[#666666]">
                   THE KNITX ATELIER STANDARD
                 </span>
-                <h2 className="mt-3 max-w-4xl font-syne text-3xl leading-[0.98] font-extrabold tracking-[-0.02em] text-black uppercase sm:text-5xl lg:text-6xl">
+                <h2 className="mt-3 max-w-4xl font-syne text-3xl leading-[0.98] font-extrabold tracking-[-0.02em] text-black uppercase break-words sm:text-5xl lg:text-6xl">
                   ONE SAMPLE SHOT. CUT ONLY WHEN CLAIMED.
                 </h2>
               </div>
 
               <Link
                 href="/atelier"
-                className="inline-flex shrink-0 items-center gap-2 border border-black px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white"
+                className="inline-flex min-h-[46px] w-full shrink-0 items-center justify-center gap-2 border border-black px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white sm:w-auto"
               >
                 <span>INSIDE THE ATELIER</span>
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
 
-            {/* Sunlit Wide 21:9 Atelier Photograph */}
-            <div className="mt-8 aspect-[16/9] w-full overflow-hidden bg-[#F4F4F5] sm:mt-12 sm:aspect-[21/9]">
+            {/* Sunlit Wide 21:9 Atelier Photograph (16:10 on Mobile) */}
+            <div className="mt-7 aspect-[16/10] w-full overflow-hidden bg-[#F4F4F5] sm:mt-12 sm:aspect-[21/9]">
               <img
                 src={FLAGSHIP_MEDIA.atelierSunlit}
                 alt="KNITX Sunlit Pattern Cutting Atelier"
@@ -764,7 +730,7 @@ export default function FlagshipHomeClient({
             </div>
 
             {/* 3 Razor-Clean Metric Columns */}
-            <div className="mt-8 grid grid-cols-1 gap-8 border-t border-black/15 pt-8 sm:mt-10 sm:grid-cols-3">
+            <div className="mt-7 grid grid-cols-1 gap-6 border-t border-black/15 pt-7 sm:mt-10 sm:grid-cols-3 sm:gap-8 sm:pt-8">
               <div>
                 <p className="font-poster text-4xl tracking-[0.02em] text-black uppercase sm:text-5xl">
                   0% DEADSTOCK
@@ -775,10 +741,10 @@ export default function FlagshipHomeClient({
               </div>
               <div>
                 <p className="font-poster text-4xl tracking-[0.02em] text-black uppercase sm:text-5xl">
-                  1–4 UNITS / DESIGN
+                  LIMITED BATCHES
                 </p>
                 <p className="mt-2 text-sm text-[#666666]">
-                  Individually numbered labels. Patterns retire permanently on
+                  Curated quantities per drop. Patterns retire permanently on
                   sellout.
                 </p>
               </div>
@@ -797,44 +763,44 @@ export default function FlagshipHomeClient({
       ) : null}
 
       {/* ===================================================================== */}
-      {/* ACT 6: ULTRA-CLEAN HORIZONTAL COMMUNITY WAITLIST & ACCESS DESK        */}
+      {/* ACT 6: ULTRA-CLEAN HORIZONTAL COMMUNITY WAITLIST & ACCOUNT DESK       */}
       {/* ===================================================================== */}
       <section
         id="waitlist"
-        className="scroll-mt-24 border-y border-black/10 bg-[#F4F4F5] py-16 sm:py-24"
+        className="scroll-mt-24 border-y border-black/10 bg-[#F4F4F5] py-12 sm:py-24"
       >
         <div className="mx-auto max-w-[1600px] px-4 sm:px-8">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+          <div className="grid grid-cols-1 gap-8 sm:gap-10 lg:grid-cols-12 lg:items-center">
             {/* Left Copy */}
             <div className="lg:col-span-5">
               <span
                 style={{ color: accentColor }}
                 className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em]"
               >
-                {editionLabel} · COMMUNITY WAITLIST &amp; ACCESS DESK
+                {editionLabel} · COMMUNITY WAITLIST &amp; ACCOUNT ACCESS
               </span>
-              <h2 className="mt-2 font-syne text-3xl font-extrabold uppercase tracking-[-0.02em] text-black sm:text-4xl">
+              <h2 className="mt-2 font-syne text-3xl font-extrabold uppercase tracking-[-0.02em] text-black break-words sm:text-4xl">
                 JOIN THE WAITLIST.
               </h2>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-[#666666]">
-                One waitlist for everything — queue updates for numbered drops +
-                automatic early access to KNITX CORE.
+                One waitlist for everything — account-based access for limited
+                drops plus automatic entry to KNITX CORE with zero access codes.
               </p>
             </div>
 
             {/* Right Interactive Waitlist Form or Serial Queue Pass */}
             <div className="lg:col-span-7">
               {mounted && showPass ? (
-                <div className="flex flex-col justify-between gap-6 bg-black p-6 text-white sm:flex-row sm:items-center sm:p-8">
+                <div className="flex flex-col justify-between gap-6 bg-black p-5 text-white sm:flex-row sm:items-center sm:p-8">
                   <div className="space-y-2">
                     <div className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">
                       <Check
                         style={{ color: accentColor }}
-                        className="h-3.5 w-3.5"
+                        className="h-3.5 w-3.5 shrink-0"
                       />
                       <span>SERIAL QUEUE PASS CONFIRMED</span>
                     </div>
-                    <div className="flex flex-wrap items-baseline gap-4">
+                    <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
                       <span className="font-poster text-4xl tracking-[0.04em] text-white sm:text-5xl">
                         #{String(showPass.position).padStart(4, "0")}
                       </span>
@@ -842,15 +808,15 @@ export default function FlagshipHomeClient({
                         {showPass.name}
                       </span>
                     </div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/60">
-                      ACCESS CODE: {showPass.accessCode}
+                    <p className="font-mono text-[10px] leading-relaxed uppercase tracking-[0.14em] text-white/60 sm:text-[11px] sm:tracking-[0.16em]">
+                      ACCOUNT-LINKED ACCESS · UNLOCKS AUTOMATICALLY WHEN GRANTED
                     </p>
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+                  <div className="flex w-full shrink-0 flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                     <Link
                       href="/drops"
-                      className="inline-flex items-center justify-center gap-2 bg-white px-5 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-opacity hover:opacity-85"
+                      className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 bg-white px-5 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-opacity hover:opacity-85 sm:w-auto"
                     >
                       <span>ENTER DROPS</span>
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -858,7 +824,7 @@ export default function FlagshipHomeClient({
                     {config.coreEnabled ? (
                       <Link
                         href="/core"
-                        className="inline-flex items-center justify-center gap-2 border border-white/40 px-5 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:border-white hover:bg-white hover:text-black"
+                        className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 border border-white/40 px-5 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:border-white hover:bg-white hover:text-black sm:w-auto"
                       >
                         <span>ENTER CORE</span>
                         <ArrowRight className="h-3.5 w-3.5" />
@@ -878,7 +844,7 @@ export default function FlagshipHomeClient({
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="FULL NAME"
                     aria-label="Full name"
-                    className="h-12 flex-1 border border-black/25 bg-white px-4 font-sans text-xs font-medium tracking-[0.08em] text-black placeholder:text-neutral-400 focus:border-black focus:outline-none"
+                    className="h-12 flex-1 border border-black/25 bg-white px-4 font-sans text-base font-medium tracking-[0.04em] text-black placeholder:text-xs placeholder:tracking-[0.08em] placeholder:text-neutral-400 focus:border-black focus:outline-none sm:text-sm sm:tracking-[0.06em]"
                   />
                   <input
                     suppressHydrationWarning
@@ -887,13 +853,13 @@ export default function FlagshipHomeClient({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="EMAIL ADDRESS"
                     aria-label="Email address"
-                    className="h-12 flex-1 border border-black/25 bg-white px-4 font-sans text-xs font-medium tracking-[0.08em] text-black placeholder:text-neutral-400 focus:border-black focus:outline-none"
+                    className="h-12 flex-1 border border-black/25 bg-white px-4 font-sans text-base font-medium tracking-[0.04em] text-black placeholder:text-xs placeholder:tracking-[0.08em] placeholder:text-neutral-400 focus:border-black focus:outline-none sm:text-sm sm:tracking-[0.06em]"
                   />
                   <button
                     suppressHydrationWarning
                     type="submit"
                     disabled={waitlistSubmitting}
-                    className="h-12 shrink-0 cursor-pointer bg-black px-8 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-85 disabled:opacity-60"
+                    className="h-12 w-full shrink-0 cursor-pointer bg-black px-8 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-85 disabled:opacity-60 sm:w-auto"
                   >
                     {waitlistSubmitting ? "JOINING..." : "JOIN"}
                   </button>
@@ -909,76 +875,39 @@ export default function FlagshipHomeClient({
                 </p>
               ) : null}
 
-              {/* Discreet Access Code Disclosure */}
-              <div className="mt-4">
-                <div className="flex flex-wrap items-center gap-4">
-                  <button
-                    suppressHydrationWarning
-                    type="button"
-                    onClick={() => setShowCodeBar((prev) => !prev)}
-                    className="cursor-pointer font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black underline underline-offset-4 transition-opacity hover:opacity-70"
-                  >
-                    Have an access code?
-                  </button>
-                  <button
-                    suppressHydrationWarning
-                    type="button"
-                    onClick={() => handleQuickCodeUnlock(masterCode, "/drops")}
-                    className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em] text-[#666666] transition-colors hover:text-black"
-                  >
-                    Drop Preview: {masterCode}
-                  </button>
-                  {config.coreEnabled ? (
+              {/* Clean Account-Based Access Check */}
+              <div className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[#666666]">
+                {showUser ? (
+                  <>
+                    <span className="break-all">
+                      Signed in as{" "}
+                      <strong className="font-semibold text-black">
+                        {showUser.email}
+                      </strong>
+                      .
+                    </span>
+                    <Link
+                      href="/drops"
+                      className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black underline underline-offset-4 transition-opacity hover:opacity-70"
+                    >
+                      {showUnlocked
+                        ? "Enter unlocked drop →"
+                        : "Check account access →"}
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <span>Already granted access?</span>
                     <button
                       suppressHydrationWarning
                       type="button"
-                      onClick={() => handleQuickCodeUnlock(coreCode, "/core")}
-                      className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em] text-[#666666] transition-colors hover:text-black"
+                      onClick={() => setAuthModalOpen(true)}
+                      className="cursor-pointer font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black underline underline-offset-4 transition-opacity hover:opacity-70"
                     >
-                      Core Key: {coreCode}
+                      Sign in to your account
                     </button>
-                  ) : null}
-                </div>
-
-                <AnimatePresence>
-                  {showCodeBar ? (
-                    <motion.form
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      onSubmit={handleAccessCodeSubmit}
-                      className="mt-3 overflow-hidden"
-                    >
-                      <div className="flex flex-col gap-2.5 sm:flex-row">
-                        <input
-                          suppressHydrationWarning
-                          type="text"
-                          value={accessCodeInput}
-                          onChange={(e) => setAccessCodeInput(e.target.value)}
-                          placeholder={`ENTER CODE (${masterCode} OR ${coreCode})`}
-                          aria-label="Enter access code"
-                          className="h-11 flex-1 border border-black bg-white px-4 font-mono text-xs uppercase tracking-[0.16em] text-black placeholder:text-neutral-400 focus:outline-none"
-                        />
-                        <button
-                          suppressHydrationWarning
-                          type="submit"
-                          className="h-11 shrink-0 cursor-pointer bg-black px-6 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85"
-                        >
-                          UNLOCK ACCESS
-                        </button>
-                      </div>
-                      {accessCodeError ? (
-                        <p
-                          style={{ color: accentColor }}
-                          className="mt-2 font-mono text-[11px]"
-                        >
-                          {accessCodeError}
-                        </p>
-                      ) : null}
-                    </motion.form>
-                  ) : null}
-                </AnimatePresence>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -994,7 +923,7 @@ export default function FlagshipHomeClient({
             {config.showVoteSection ? (
               <Link
                 href="/vote"
-                className="group relative flex min-h-[48vh] w-full items-end overflow-hidden bg-black"
+                className="group relative flex min-h-[44svh] w-full items-end overflow-hidden bg-black sm:min-h-[52vh]"
               >
                 <img
                   src={FLAGSHIP_MEDIA.knit1of1}
@@ -1005,11 +934,11 @@ export default function FlagshipHomeClient({
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/15"
                 />
-                <div className="relative z-10 w-full p-6 sm:p-10">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white/75">
+                <div className="relative z-10 w-full p-5 sm:p-10">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-white/75 sm:tracking-[0.2em]">
                     COMMUNITY BALLOT · {candidateCount} SHORTLISTED CONCEPTS
                   </span>
-                  <h2 className="mt-2 font-poster text-4xl leading-[0.9] text-white uppercase sm:text-5xl">
+                  <h2 className="mt-2 font-poster text-4xl leading-[0.9] text-white uppercase break-words sm:text-5xl">
                     VOTE NEXT DROP
                   </h2>
                   <span className="mt-4 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75">
@@ -1023,7 +952,7 @@ export default function FlagshipHomeClient({
             {config.showSubmitSection ? (
               <Link
                 href="/submit"
-                className="group relative flex min-h-[48vh] w-full items-end overflow-hidden bg-black"
+                className="group relative flex min-h-[44svh] w-full items-end overflow-hidden bg-black sm:min-h-[52vh]"
               >
                 <img
                   src={FLAGSHIP_MEDIA.mysterySilhouette}
@@ -1034,11 +963,11 @@ export default function FlagshipHomeClient({
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/15"
                 />
-                <div className="relative z-10 w-full p-6 sm:p-10">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white/75">
+                <div className="relative z-10 w-full p-5 sm:p-10">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-white/75 sm:tracking-[0.2em]">
                     OPEN CREATOR BRIEF · CREDITED BY NAME
                   </span>
-                  <h2 className="mt-2 font-poster text-4xl leading-[0.9] text-white uppercase sm:text-5xl">
+                  <h2 className="mt-2 font-poster text-4xl leading-[0.9] text-white uppercase break-words sm:text-5xl">
                     SUBMIT YOUR DESIGN
                   </h2>
                   <span className="mt-4 inline-flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white underline underline-offset-4 transition-opacity group-hover:opacity-75">
@@ -1054,218 +983,24 @@ export default function FlagshipHomeClient({
         {/* Jet-Black Editions Archive Bar */}
         <Link
           href="/archive"
-          className="group flex items-center justify-between bg-black px-4 py-6 text-white transition-colors hover:bg-[#111111] sm:px-8"
+          className="group flex items-center justify-between gap-3 bg-black px-4 py-5 text-white transition-colors hover:bg-[#111111] sm:px-8 sm:py-6"
         >
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <span
               aria-hidden="true"
               style={{ backgroundColor: accentColor }}
               className="h-2 w-2 shrink-0"
             />
-            <span className="font-syne text-sm font-extrabold uppercase tracking-[0.14em] sm:text-base">
+            <span className="truncate font-syne text-xs font-extrabold uppercase tracking-[0.12em] sm:text-base sm:tracking-[0.14em]">
               {editionLabel} &amp; EDITIONS ARCHIVE
             </span>
           </div>
-          <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white/80 transition-colors group-hover:text-white">
+          <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] text-white/80 transition-colors group-hover:text-white sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]">
             <span>VIEW ARCHIVE</span>
             <ArrowRight className="h-4 w-4" />
           </span>
         </Link>
       </section>
-
-      {/* ===================================================================== */}
-      {/* PURE-WHITE SLIDE-OVER QUICK-VIEW DRAWER                               */}
-      {/* ===================================================================== */}
-      <AnimatePresence>
-        {selectedProduct ? (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setSelectedProduct(null)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
-            />
-
-            <motion.aside
-              role="dialog"
-              aria-modal="true"
-              aria-label={cleanFlagshipText(selectedProduct.product.title)}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 flex h-full w-full max-w-lg flex-col overflow-y-auto bg-white text-black"
-            >
-              {/* Drawer Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white/95 px-6 py-4 backdrop-blur-md">
-                <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    {selectedProduct.product.serialCode}
-                  </span>
-                  {selectedProduct.product.tier === "one-of-one" ? (
-                    <span
-                      style={{ backgroundColor: accentColor }}
-                      className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white"
-                    >
-                      1 OF 1
-                    </span>
-                  ) : null}
-                </div>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => setSelectedProduct(null)}
-                  aria-label="Close quick view"
-                  className="cursor-pointer p-1 text-black transition-opacity hover:opacity-60"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Studio Image */}
-              <div className="aspect-[4/5] w-full shrink-0 overflow-hidden bg-[#F4F4F5]">
-                <img
-                  src={getFlagshipProductImage(
-                    selectedProduct.product,
-                    selectedProduct.index,
-                    showUnlocked
-                  )}
-                  alt={cleanFlagshipText(selectedProduct.product.title)}
-                  className="h-full w-full object-cover object-center"
-                />
-              </div>
-
-              {/* Product Details & Purchase Controls */}
-              <div className="flex flex-1 flex-col gap-6 p-6">
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="font-syne text-xl font-extrabold uppercase tracking-[-0.01em] text-black">
-                      {cleanFlagshipText(selectedProduct.product.title)}
-                    </h3>
-                    <span className="shrink-0 font-mono text-base font-semibold text-black">
-                      {formatInr(selectedProduct.product.priceInr)}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 text-sm leading-relaxed text-[#666666]">
-                    {cleanFlagshipText(selectedProduct.product.description)}
-                  </p>
-                </div>
-
-                {/* Spec Grid */}
-                <div className="grid grid-cols-3 gap-3 border-y border-black/10 py-4 font-mono text-[10px] uppercase tracking-[0.14em]">
-                  <div>
-                    <span className="block text-[#666666]">WEIGHT</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.gsmWeight}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[#666666]">EDITION</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.remainingUnits} OF{" "}
-                      {selectedProduct.product.totalUnits} LEFT
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[#666666]">DISPATCH</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.productionDays} DAYS
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-xs text-[#666666]">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    FABRICATION
-                  </span>
-                  <p className="mt-1 font-medium text-black">
-                    {cleanFlagshipText(selectedProduct.product.fabric)}
-                  </p>
-                  {selectedProduct.product.craftsmanship.length > 0 ? (
-                    <ul className="mt-2.5 flex flex-wrap gap-1.5">
-                      {selectedProduct.product.craftsmanship.map((detail) => (
-                        <li
-                          key={detail}
-                          className="bg-[#F4F4F5] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-700"
-                        >
-                          {cleanFlagshipText(detail)}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-
-                {/* Size Selector */}
-                <div>
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    SELECT SIZE
-                  </span>
-                  <div className="mt-2.5 grid grid-cols-4 gap-2">
-                    {selectedProduct.product.sizes.map((size) => {
-                      const active = selectedSize === size;
-                      return (
-                        <button
-                          suppressHydrationWarning
-                          key={size}
-                          type="button"
-                          onClick={() => setSelectedSize(size)}
-                          className={cn(
-                            "h-11 cursor-pointer border font-mono text-xs font-semibold uppercase transition-colors",
-                            active
-                              ? "border-black bg-black text-white"
-                              : "border-black/20 bg-white text-black hover:border-black"
-                          )}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {bagNotice ? (
-                  <p
-                    style={{ color: accentColor }}
-                    className="font-mono text-xs"
-                  >
-                    {bagNotice}
-                  </p>
-                ) : null}
-
-                {/* CTA: Add to Bag if unlocked, else Enter Access Code */}
-                <div className="mt-auto pt-2">
-                  {showUnlocked ? (
-                    <button
-                      suppressHydrationWarning
-                      type="button"
-                      onClick={handleQuickAddToBag}
-                      disabled={selectedProduct.product.remainingUnits <= 0}
-                      className="w-full cursor-pointer bg-black py-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:bg-neutral-300"
-                    >
-                      {selectedProduct.product.remainingUnits <= 0
-                        ? "SOLD OUT"
-                        : `ADD TO BAG — ${formatInr(selectedProduct.product.priceInr)}`}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/drops"
-                      onClick={() => setSelectedProduct(null)}
-                      className="flex w-full items-center justify-center gap-2 bg-black py-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85"
-                    >
-                      <Lock className="h-3.5 w-3.5" />
-                      <span>ENTER ACCESS CODE</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </motion.aside>
-          </div>
-        ) : null}
-      </AnimatePresence>
     </div>
   );
 }

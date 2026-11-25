@@ -77,24 +77,24 @@ export default function FlagshipArchiveClient({
 
   return (
     <div
-      className="min-h-screen bg-[#FFFFFF] text-[#000000]"
+      className="min-h-screen overflow-x-clip bg-[#FFFFFF] text-[#000000]"
       style={{ "--flagship-accent": accent } as React.CSSProperties}
     >
       {/* Pure-White Architectural Header */}
-      <header className="border-b border-black/10 bg-[#FFFFFF] py-14 sm:py-20">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
-          <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-12">
+      <header className="border-b border-black/10 bg-[#FFFFFF] py-12 sm:py-20">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
+          <div className="grid grid-cols-1 items-end gap-8 sm:gap-10 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
-                <span className="inline-block h-2 w-2 bg-[var(--flagship-accent)]" />
+              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.2em] text-[#666666] uppercase sm:tracking-[0.22em]">
+                <span className="inline-block h-2 w-2 shrink-0 bg-[var(--flagship-accent)]" />
                 <span>KNITX EDITION CALENDAR · PERMANENT ARCHIVE</span>
               </div>
 
-              <h1 className="mt-4 font-poster text-6xl leading-[0.88] tracking-[-0.01em] text-[#000000] uppercase sm:text-8xl lg:text-[96px]">
+              <h1 className="mt-4 font-poster text-[36px] leading-[0.9] tracking-[-0.01em] text-[#000000] uppercase break-words sm:text-6xl lg:text-[80px]">
                 EDITIONS &amp; ARCHIVE
               </h1>
 
-              <p className="mt-6 max-w-2xl font-sans text-sm leading-relaxed text-[#666666] sm:text-base">
+              <p className="mt-5 max-w-2xl font-sans text-sm leading-relaxed text-[#666666] sm:mt-6 sm:text-base">
                 Every KNITX edition is issued sequentially and permanently
                 retired once allocated. Each cycle moves from active private
                 drop to the heavyweight KNITX CORE wardrobe, then forward into
@@ -105,36 +105,37 @@ export default function FlagshipArchiveClient({
             {/* Active Edition Spec Ledger */}
             <aside className="lg:col-span-4">
               <div className="divide-y divide-black/10 border border-black/10 bg-[#F4F4F5]">
-                <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-                  <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+                <div className="flex items-baseline justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
                     ACTIVE EDITION
                   </span>
-                  <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-[#000000] uppercase">
+                  <span className="text-right font-mono text-[11px] font-semibold tracking-[0.14em] text-[#000000] uppercase">
                     {editionLabel}
                   </span>
                 </div>
-                <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-                  <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+                <div className="flex items-baseline justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
                     CURRENT TITLE
                   </span>
-                  <span className="truncate font-mono text-[11px] font-semibold tracking-[0.12em] text-[#000000] uppercase">
+                  <span className="truncate text-right font-mono text-[11px] font-semibold tracking-[0.12em] text-[#000000] uppercase">
                     {cleanDropTitle}
                   </span>
                 </div>
-                <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-                  <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
-                    SILHOUETTE SPLIT
+                <div className="flex items-baseline justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
+                    EDITION PIECES
                   </span>
-                  <span className="font-mono text-[11px] tracking-[0.14em] text-[#000000] uppercase">
+                  <span className="text-right font-mono text-[10px] tracking-[0.12em] text-[#000000] uppercase sm:text-[11px] sm:tracking-[0.14em]">
+                    {String(products.length).padStart(2, "0")} TOTAL ·{" "}
                     {String(oneOfOneCount).padStart(2, "0")} 1-OF-1 ·{" "}
                     {String(smallBatchCount).padStart(2, "0")} BATCH
                   </span>
                 </div>
-                <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-                  <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+                <div className="flex items-baseline justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
                     CORE WINDOW
                   </span>
-                  <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-[var(--flagship-accent)] uppercase">
+                  <span className="text-right font-mono text-[11px] font-semibold tracking-[0.14em] text-[var(--flagship-accent)] uppercase">
                     +{coreOffsetDays} DAYS POST-DROP
                   </span>
                 </div>
@@ -146,7 +147,7 @@ export default function FlagshipArchiveClient({
 
       {/* Sequential 4-Stage Editions & Core Pipeline */}
       <section className="border-b border-black/10 bg-[#FFFFFF]">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
           <div className="flex items-center justify-between border-b border-black/10 py-5">
             <span className="font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
               SEQUENTIAL RELEASE PIPELINE
@@ -263,7 +264,8 @@ export default function FlagshipArchiveClient({
             <p className="max-w-md font-sans text-xs leading-relaxed text-[#666666] sm:text-sm">
               Every silhouette cut inside our atelier belongs to one of three
               permanent house tiers — from singular collector pieces to our
-              heavyweight unbranded core wardrobe.
+              minimalist everyday KNITX CORE wardrobe finished with subtle
+              signature branding.
             </p>
           </div>
 
@@ -325,7 +327,7 @@ export default function FlagshipArchiveClient({
                     TIER 02 · MICRO-BATCH SERIES
                   </span>
                   <span className="border border-black/15 bg-[#F4F4F5] px-2.5 py-1 font-mono text-[10px] tracking-[0.16em] text-[#000000] uppercase">
-                    03 – 04 UNITS
+                    CURATED LIMITED RUNS
                   </span>
                 </div>
 
@@ -334,13 +336,14 @@ export default function FlagshipArchiveClient({
                 </h3>
 
                 <p className="mt-3 border-b border-black/10 pb-6 font-mono text-[11px] tracking-[0.14em] text-[#666666] uppercase">
-                  03–04 UNITS PER DESIGN · ₹2,500 – ₹4,000
+                  CURATED LIMITED RUNS · ₹2,500 – ₹4,000
                 </p>
 
                 <p className="mt-6 font-sans text-sm leading-relaxed text-[#666666]">
                   Architectural silhouettes cut from 310–480 GSM Indian textiles
                   with raised multi-pass puff prints and chain-stitch detailing.
-                  Produced strictly after reservation with zero excess stock.
+                  Strictly limited batch quantities decided per drop, produced
+                  only after reservation with zero excess stock.
                 </p>
               </div>
 
@@ -348,7 +351,7 @@ export default function FlagshipArchiveClient({
                 <div className="flex items-baseline justify-between gap-4 py-3.5">
                   <dt className="text-[#666666]">ALLOCATION</dt>
                   <dd className="font-semibold text-[#000000]">
-                    03 – 04 NUMBERED UNITS
+                    LIMITED PER DROP
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-4 py-3.5">
@@ -387,8 +390,9 @@ export default function FlagshipArchiveClient({
                 </p>
 
                 <p className="mt-6 font-sans text-sm leading-relaxed text-[#666666]">
-                  Completely unbranded 320–480 GSM foundational essentials in
-                  mineral garment-dyed colorways. Opens {coreOffsetDays} days
+                  Minimalist everyday essentials in curated mineral colorways,
+                  finished with subtle signature KNITX branding (tonal
+                  embroidery &amp; woven labels). Opens {coreOffsetDays} days
                   after the active drop for community waitlist members.
                 </p>
               </div>
@@ -410,7 +414,7 @@ export default function FlagshipArchiveClient({
                   <div className="flex items-baseline justify-between gap-4 py-3.5">
                     <dt className="text-[#666666]">BRANDING</dt>
                     <dd className="font-semibold text-[#000000]">
-                      UNBRANDED · PURE FIT
+                      SUBTLE SIGNATURE KNITX
                     </dd>
                   </div>
                 </dl>
@@ -434,7 +438,7 @@ export default function FlagshipArchiveClient({
           <div className="flex flex-col justify-between gap-6 border-b border-black/10 pb-8 sm:flex-row sm:items-end">
             <div>
               <p className="font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
-                {editionLabel} · PUBLIC CONTACT SHEET
+                {editionLabel} · {products.length} CURATED PIECES · PUBLIC CONTACT SHEET
               </p>
               <h2 className="mt-2.5 font-syne text-3xl font-extrabold leading-[1.02] tracking-[-0.02em] text-[#000000] uppercase sm:text-5xl">
                 REVEALED SILHOUETTES
@@ -455,7 +459,11 @@ export default function FlagshipArchiveClient({
               const isOneOfOne = piece.tier === "one-of-one";
 
               return (
-                <Link key={piece._id} href="/drops" className="group block">
+                <Link
+                  key={piece._id}
+                  href={`/product/${piece.slug}`}
+                  className="group block"
+                >
                   <div className="relative aspect-[3/4] w-full overflow-hidden border border-black/10 bg-[#F4F4F5]">
                     <Image
                       src={getFlagshipCleanImage(piece.imageUrl, idx)}

@@ -7,7 +7,7 @@ export const revalidate = 30;
 export const metadata: Metadata = {
   title: "Private Drop · KNITX",
   description:
-    "Enter the KNITX private drop room to unveil all numbered silhouettes, inspect fabric weights, and reserve 1–4 unit limited-run garments.",
+    "Sign in with your admitted KNITX account to view the current limited-edition drop, inspect fabric weights, and reserve cut-to-order garments.",
 };
 
 export default async function DropsPage() {

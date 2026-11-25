@@ -120,7 +120,7 @@ export default function AuthModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-[#DDD7CB] bg-[#FFFFFF] p-7 text-[#111110] shadow-[0_32px_90px_-30px_rgba(17,17,16,0.32)] sm:p-9"
+            className="relative z-10 max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#DDD7CB] bg-[#FFFFFF] p-6 text-[#111110] shadow-[0_32px_90px_-30px_rgba(17,17,16,0.32)] sm:p-9"
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
@@ -226,7 +226,7 @@ export default function AuthModal() {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Aarav Mehta"
                     required
-                    className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-2.5 text-sm text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-3 text-base text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none sm:py-2.5 sm:text-sm"
                   />
                 </div>
               )}
@@ -242,7 +242,7 @@ export default function AuthModal() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@domain.com"
                   required
-                  className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-2.5 text-sm text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-3 text-base text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none sm:py-2.5 sm:text-sm"
                 />
               </div>
 
@@ -257,7 +257,7 @@ export default function AuthModal() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-2.5 text-sm text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-[#DDD7CB] bg-[#F7F5F0] px-4 py-3 text-base text-[#111110] placeholder:text-[#6A655D]/60 focus:border-[#111110] focus:bg-[#FFFFFF] focus:outline-none sm:py-2.5 sm:text-sm"
                 />
               </div>
 

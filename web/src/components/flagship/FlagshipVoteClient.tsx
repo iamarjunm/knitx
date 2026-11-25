@@ -204,24 +204,24 @@ export default function FlagshipVoteClient({
 
   return (
     <div
-      className="min-h-screen bg-[#FFFFFF] text-[#000000]"
+      className="min-h-screen overflow-x-clip bg-[#FFFFFF] text-[#000000]"
       style={{ "--flagship-accent": accent } as React.CSSProperties}
     >
       {/* Flagship Header */}
-      <header className="border-b border-black/10 bg-[#FFFFFF] py-14 sm:py-20">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
-          <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-12">
+      <header className="border-b border-black/10 bg-[#FFFFFF] py-12 sm:py-20">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
+          <div className="grid grid-cols-1 items-end gap-8 sm:gap-10 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
-                <span className="inline-block h-2 w-2 bg-[var(--flagship-accent)]" />
+              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.2em] text-[#666666] uppercase sm:tracking-[0.22em]">
+                <span className="inline-block h-2 w-2 shrink-0 bg-[var(--flagship-accent)]" />
                 <span>COMMUNITY BALLOT · LIVE CURATION ROOM</span>
               </div>
 
-              <h1 className="mt-4 font-syne text-5xl font-extrabold leading-[0.94] tracking-[-0.03em] text-[#000000] uppercase sm:text-7xl lg:text-[80px]">
+              <h1 className="mt-4 font-syne text-[36px] font-extrabold leading-[0.94] tracking-[-0.03em] text-[#000000] uppercase break-words sm:text-6xl lg:text-[80px]">
                 VOTE NEXT DROP
               </h1>
 
-              <p className="mt-6 max-w-xl font-sans text-sm leading-relaxed text-[#666666] sm:text-base">
+              <p className="mt-5 max-w-xl font-sans text-sm leading-relaxed text-[#666666] sm:mt-6 sm:text-base">
                 Collectors decide which shortlisted silhouettes move into
                 physical sample cutting. Inspect each concept below and cast
                 your vote on the pieces that enter the next edition.
@@ -231,29 +231,29 @@ export default function FlagshipVoteClient({
             {/* Live Tally Board */}
             <aside className="lg:col-span-4">
               <div className="divide-y divide-black/10 border border-black/10 bg-[#F4F4F5]">
-                <div className="px-6 py-5">
+                <div className="px-5 py-4 sm:px-6 sm:py-5">
                   <p className="font-mono text-[10px] tracking-[0.2em] text-[#666666] uppercase">
                     LIVE TOTAL BALLOTS
                   </p>
-                  <p className="mt-2 font-poster text-5xl leading-none text-[#000000]">
+                  <p className="mt-2 font-poster text-4xl leading-none text-[#000000] sm:text-5xl">
                     {totalBallots.toLocaleString("en-IN")}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 divide-x divide-black/10 bg-[#FFFFFF]">
-                  <div className="px-6 py-4">
-                    <p className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+                  <div className="px-4 py-3.5 sm:px-6 sm:py-4">
+                    <p className="font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
                       CANDIDATES
                     </p>
-                    <p className="mt-1.5 font-mono text-[11px] font-semibold tracking-[0.14em] text-[#000000] uppercase">
+                    <p className="mt-1.5 font-mono text-[11px] font-semibold tracking-[0.12em] text-[#000000] uppercase sm:tracking-[0.14em]">
                       {String(candidates.length).padStart(2, "0")} CONCEPTS
                     </p>
                   </div>
-                  <div className="px-6 py-4">
-                    <p className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+                  <div className="px-4 py-3.5 sm:px-6 sm:py-4">
+                    <p className="font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:tracking-[0.18em]">
                       YOUR VOTES
                     </p>
-                    <p className="mt-1.5 font-mono text-[11px] font-semibold tracking-[0.14em] text-[var(--flagship-accent)] uppercase">
+                    <p className="mt-1.5 font-mono text-[11px] font-semibold tracking-[0.12em] text-[var(--flagship-accent)] uppercase sm:tracking-[0.14em]">
                       {mounted ? String(votedIds.length).padStart(2, "0") : "00"}{" "}
                       CAST
                     </p>
@@ -267,11 +267,11 @@ export default function FlagshipVoteClient({
 
       {/* Filter & Sort Control Bar */}
       <div className="border-b border-black/10 bg-[#F4F4F5]">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-10 lg:px-14">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-3 px-5 py-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:px-10 sm:py-4 lg:px-14">
           <div
             role="tablist"
             aria-label="Filter concepts by tier"
-            className="flex flex-wrap items-center gap-2"
+            className="no-scrollbar flex items-center gap-2 overflow-x-auto"
           >
             {filterOptions.map((option) => {
               const active = tierFilter === option.id;
@@ -284,7 +284,7 @@ export default function FlagshipVoteClient({
                   suppressHydrationWarning
                   onClick={() => setTierFilter(option.id)}
                   className={cn(
-                    "cursor-pointer border px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors",
+                    "min-h-[40px] shrink-0 cursor-pointer border px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.18em] whitespace-nowrap uppercase transition-colors",
                     active
                       ? "border-[#000000] bg-[#000000] text-[#FFFFFF]"
                       : "border-black/15 bg-[#FFFFFF] text-[#666666] hover:border-[#000000] hover:text-[#000000]"
@@ -296,17 +296,17 @@ export default function FlagshipVoteClient({
             })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+          <div className="no-scrollbar flex items-center gap-2.5 overflow-x-auto">
+            <span className="shrink-0 font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
               SORT
             </span>
-            <div className="inline-flex border border-black/15 bg-[#FFFFFF]">
+            <div className="inline-flex shrink-0 border border-black/15 bg-[#FFFFFF]">
               <button
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setSortBy("top")}
                 className={cn(
-                  "cursor-pointer px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors",
+                  "min-h-[40px] shrink-0 cursor-pointer px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.16em] whitespace-nowrap uppercase transition-colors",
                   sortBy === "top"
                     ? "bg-[#000000] text-[#FFFFFF]"
                     : "bg-[#FFFFFF] text-[#666666] hover:text-[#000000]"
@@ -319,7 +319,7 @@ export default function FlagshipVoteClient({
                 suppressHydrationWarning
                 onClick={() => setSortBy("code")}
                 className={cn(
-                  "cursor-pointer border-l border-black/15 px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors",
+                  "min-h-[40px] shrink-0 cursor-pointer border-l border-black/15 px-4 py-2 font-mono text-[10px] font-semibold tracking-[0.16em] whitespace-nowrap uppercase transition-colors",
                   sortBy === "code"
                     ? "bg-[#000000] text-[#FFFFFF]"
                     : "bg-[#FFFFFF] text-[#666666] hover:text-[#000000]"

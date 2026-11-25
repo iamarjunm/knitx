@@ -17,17 +17,17 @@ const PRODUCTION_STAGES = [
   },
   {
     step: "02",
-    label: "HALF REVEALED",
+    label: "SELECT PREVIEW",
     phase: "STAGE II · EXHIBITION",
     description:
-      "Half of each ten-piece edition is previewed publicly while the remaining silhouettes stay veiled until private admission opens.",
+      "Selected silhouettes from each drop are previewed publicly while remaining pieces unlock automatically once your account receives access.",
   },
   {
     step: "03",
     label: "PRIVATE CLAIM",
     phase: "STAGE III · ALLOCATION",
     description:
-      "Admitted waitlist collectors claim either a small-batch run (3–4 numbered units) or a singular one-of-one garment.",
+      "Admitted collector accounts claim either a curated small-batch run or a singular one-of-one garment—no access code required.",
   },
   {
     step: "04",
@@ -59,9 +59,9 @@ const DETAIL_PLATES = [
     plate: "PLATE C · KNITX CORE MINERAL STACK",
     spec: "320–480 GSM ESSENTIALS",
     image: FLAGSHIP_MEDIA.coreColorwaysStack,
-    alt: "KNITX Core heavyweight unbranded garments stacked in mineral colorways",
+    alt: "KNITX Core minimalist everyday essentials stacked in curated mineral colorways",
     caption:
-      "Unbranded foundational fleece and dry-hand jersey dyed in small mineral pigment baths for our Core wardrobe.",
+      "Minimalist everyday essentials in curated mineral colorways, finished with subtle signature KNITX branding (tonal embroidery & woven labels).",
   },
 ] as const;
 
@@ -116,20 +116,20 @@ export default function FlagshipAtelierClient() {
 
   return (
     <div
-      className="min-h-screen bg-[#FFFFFF] text-[#000000]"
+      className="min-h-screen overflow-x-clip bg-[#FFFFFF] text-[#000000]"
       style={{ "--flagship-accent": accent } as React.CSSProperties}
     >
       {/* Act 1 — Pure-White Manifesto Spread */}
-      <header className="border-b border-black/10 bg-[#FFFFFF] py-14 sm:py-20">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
-          <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-12">
+      <header className="border-b border-black/10 bg-[#FFFFFF] py-12 sm:py-20">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
+          <div className="grid grid-cols-1 items-end gap-8 sm:gap-10 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
-                <span className="inline-block h-2 w-2 bg-[var(--flagship-accent)]" />
+              <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.2em] text-[#666666] uppercase sm:tracking-[0.22em]">
+                <span className="inline-block h-2 w-2 shrink-0 bg-[var(--flagship-accent)]" />
                 <span>THE ATELIER · SAMPLE-FIRST METHODOLOGY</span>
               </div>
 
-              <h1 className="mt-5 font-syne text-5xl font-extrabold leading-[0.92] tracking-[-0.03em] text-[#000000] uppercase sm:text-7xl lg:text-[82px]">
+              <h1 className="mt-4 font-syne text-[36px] font-extrabold leading-[0.94] tracking-[-0.03em] text-[#000000] uppercase break-words sm:mt-5 sm:text-6xl lg:text-[80px]">
                 <span className="text-[var(--flagship-accent)]">
                   0% DEADSTOCK.
                 </span>{" "}
@@ -144,14 +144,14 @@ export default function FlagshipAtelierClient() {
                 is cut strictly to order from a single physical studio sample.
               </p>
 
-              <div className="mt-6 grid grid-cols-2 divide-x divide-black/10 border border-black/10 bg-[#F4F4F5] font-mono text-[10px] tracking-[0.16em] uppercase">
-                <div className="px-4 py-3">
+              <div className="mt-6 grid grid-cols-2 divide-x divide-black/10 border border-black/10 bg-[#F4F4F5] font-mono text-[10px] tracking-[0.14em] uppercase sm:tracking-[0.16em]">
+                <div className="px-3.5 py-3 sm:px-4">
                   <span className="block text-[#666666]">PROTOTYPE</span>
                   <span className="mt-1 block font-semibold text-[#000000]">
                     01 SAMPLE / DESIGN
                   </span>
                 </div>
-                <div className="px-4 py-3">
+                <div className="px-3.5 py-3 sm:px-4">
                   <span className="block text-[#666666]">WASTE RATE</span>
                   <span className="mt-1 block font-semibold text-[var(--flagship-accent)]">
                     0% DEADSTOCK
@@ -161,8 +161,8 @@ export default function FlagshipAtelierClient() {
             </div>
           </div>
 
-          {/* Full-Width 21:9 Sunlit Atelier Hero Photograph */}
-          <figure className="mt-12 sm:mt-16">
+          {/* Full-Width 16:10 Mobile / 21:9 Desktop Sunlit Atelier Hero Photograph */}
+          <figure className="mt-10 sm:mt-16">
             <div className="relative aspect-[16/10] w-full overflow-hidden border border-black/10 bg-[#F4F4F5] sm:aspect-[21/9]">
               <Image
                 src={FLAGSHIP_MEDIA.atelierSunlit}
@@ -173,7 +173,7 @@ export default function FlagshipAtelierClient() {
                 className="object-cover"
               />
             </div>
-            <figcaption className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-4 font-mono text-[10px] tracking-[0.18em] text-[#666666] uppercase">
+            <figcaption className="mt-4 flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-4 font-mono text-[10px] tracking-[0.16em] text-[#666666] uppercase sm:gap-3 sm:tracking-[0.18em]">
               <span>FIG. 01 — SUNLIT PATTERN CUTTING &amp; SAMPLE ATELIER</span>
               <span className="text-[#000000]">
                 INDIA · PERMANENT STUDIO STANDARD
@@ -184,14 +184,14 @@ export default function FlagshipAtelierClient() {
       </header>
 
       {/* Act 2 — 4-Stage Crisp Numbered Grid */}
-      <section className="border-b border-black/10 bg-[#FFFFFF] py-16 sm:py-24">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
+      <section className="border-b border-black/10 bg-[#FFFFFF] py-14 sm:py-24">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
                 PRODUCTION SEQUENCE · FOUR STAGES
               </p>
-              <h2 className="mt-3 font-syne text-3xl font-extrabold leading-[1.0] tracking-[-0.02em] text-[#000000] uppercase sm:text-5xl">
+              <h2 className="mt-3 font-syne text-[28px] font-extrabold leading-[1.02] tracking-[-0.02em] text-[#000000] uppercase break-words sm:text-5xl">
                 FROM SINGLE SAMPLE TO NUMBERED DISPATCH.
               </h2>
             </div>

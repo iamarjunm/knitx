@@ -55,11 +55,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "KNITX — Limited-Edition Streetwear & Core Wardrobe",
   description:
-    "Numbered Indian streetwear cut to order with zero deadstock. Ultra-limited drops of 1–4 units per design alongside the heavyweight KNITX CORE wardrobe.",
+    "Numbered Indian streetwear cut to order with zero deadstock. Curated limited-batch drops alongside the heavyweight KNITX CORE wardrobe.",
   openGraph: {
     title: "KNITX — Limited-Edition Streetwear House",
     description:
-      "1–4 units per design, singular one-of-one collector works, and the heavyweight KNITX CORE wardrobe. Waitlist & community access.",
+      "Limited-batch drops, one-of-one collector works, and the heavyweight KNITX CORE wardrobe. Account-based waitlist & community access.",
     type: "website",
     locale: "en_IN",
     siteName: "KNITX",

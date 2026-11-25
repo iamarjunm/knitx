@@ -63,11 +63,11 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   accentColor: "#E11D2E",
   announcementEnabled: false,
   announcementText:
-    "EDITION 01 WAITLIST LIVE · CORE ESSENTIAL WARDROBE OPENS 2 WEEKS POST-DROP FOR COMMUNITY MEMBERS",
-  heroEyebrow: "LIMITED TO 1–4 UNITS PER DESIGN · ZERO RESTOCKS",
+    "WAITLIST LIVE · ACCOUNT-BASED DROP ACCESS · KNITX CORE OPENS 2 WEEKS POST-DROP FOR COMMUNITY MEMBERS",
+  heroEyebrow: "LIMITED-EDITION DROPS · CUT TO ORDER · ZERO RESTOCKS",
   heroTitleOverride: "",
   heroSubtitle:
-    "Numbered Indian streetwear cut to order. One-of-one collector works and ultra-scarce small batches.",
+    "Numbered Indian streetwear cut to order. One-of-one collector works and strictly limited small-batch editions.",
   heroCtaPrimary: "JOIN WAITLIST",
   heroCtaSecondary: "ENTER DROP",
   dropPhase: "waitlist",
@@ -77,7 +77,7 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   coreEnabled: true,
   coreTitle: "KNITX CORE",
   coreSubtitle:
-    "Heavyweight unbranded wardrobe essentials in curated mineral colorways. Opens 2 weeks after Drop 1 exclusively for Drop 1 & community waitlist members.",
+    "Heavyweight everyday essentials in curated mineral colorways finished with subtle signature KNITX branding. Opens 2 weeks after Drop 1 for admitted Drop 1 & community waitlist accounts.",
   coreLaunchOffsetDays: 14,
   coreLaunchDateOverride: "",
   coreAccessMode: "community",
@@ -87,7 +87,7 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   showVoteSection: true,
   showSubmitSection: true,
   showAtelierSection: true,
-  footerTagline: "CRAFTED IN INDIA · LIMITED TO 1–4 UNITS PER DESIGN · ZERO DEADSTOCK",
+  footerTagline: "CRAFTED IN INDIA · LIMITED EDITIONS · CUT TO ORDER · ZERO DEADSTOCK",
 };
 
 export const CORE_COLLECTION_GARMENTS: CoreGarment[] = [
@@ -101,12 +101,12 @@ export const CORE_COLLECTION_GARMENTS: CoreGarment[] = [
     fabric: "100% Combed Ring-Spun Heavy Diagonal French Terry",
     fit: "Structured Boxy Cropped Fit · Drop Shoulder",
     description:
-      "Architectural everyday hoodie milled to 460 GSM with a self-supporting double-lined hood, zero drawstrings, and dense 2x2 ribbed cuffs. Completely unbranded for pure silhouette presence.",
+      "Architectural everyday hoodie milled to 460 GSM with a self-supporting double-lined hood, zero drawstrings, and dense 2x2 ribbed cuffs. Finished with tonal KNITX embroidery and woven archival hem branding.",
     craftsmanship: [
       "460 GSM brushed diagonal loopback cotton",
       "Double-layer structured hood with zero drawstrings",
-      "Garment-dyed mineral pigment wash for tonal depth",
-      "Pre-shrunk enzyme finish with concealed woven neck tab",
+      "Garment-dyed mineral pigment wash with tonal KNITX chest mark",
+      "Pre-shrunk enzyme finish with signature woven KNITX neck & hem labels",
     ],
     sizes: ["S", "M", "L", "XL"],
     productionDays: 5,
@@ -156,12 +156,12 @@ export const CORE_COLLECTION_GARMENTS: CoreGarment[] = [
     fabric: "100% Open-End Dry-Hand Carded Indian Cotton",
     fit: "Oversized Box Fit · High 3cm Mock Rib Collar",
     description:
-      "Our foundational blank tee engineered with a dry, crisp hand-feel and a dense 3cm collar rib that never bacon-necks. Dyed in small mineral baths across six timeless colorways.",
+      "Our foundational heavyweight tee engineered with a dry, crisp hand-feel and a dense 3cm collar rib that never loses shape. Dyed in small mineral baths across six timeless colorways with signature tonal KNITX branding.",
     craftsmanship: [
       "320 GSM dry-hand heavy single jersey",
       "3cm high-tension mock rib collar",
-      "24cm dropped shoulder with architectural sleeve drape",
-      "Twin-needle reinforced hem & interior tonal serial stitch",
+      "Subtle tonal KNITX embroidery & woven side-seam branding",
+      "Twin-needle reinforced hem & interior woven KNITX neck label",
     ],
     sizes: ["S", "M", "L", "XL"],
     productionDays: 4,
@@ -217,12 +217,12 @@ export const CORE_COLLECTION_GARMENTS: CoreGarment[] = [
     fabric: "Heavyweight Loopback Terry with Brushed Metal Hardware",
     fit: "Cropped Boxy Outer-Layer Proportion",
     description:
-      "Substantial outer-layer zip silhouette cut from 480 GSM unbrushed loopback cotton with a custom oxidized two-way metal zip. Built to layer cleanly over Core 320 GSM tees.",
+      "Substantial outer-layer zip silhouette cut from 480 GSM unbrushed loopback cotton with custom KNITX-engraved two-way metal hardware. Built to layer cleanly over Core 320 GSM tees.",
     craftsmanship: [
       "480 GSM heavy loopback cotton body",
-      "Two-way brushed gunmetal zipper hardware",
+      "Custom KNITX-engraved two-way brushed gunmetal zipper",
       "Bar-tacked angled welt pockets & structured hood",
-      "Garment-washed tonal finish with zero exterior branding",
+      "Garment-washed tonal finish with subtle embroidered KNITX insignia",
     ],
     sizes: ["S", "M", "L", "XL"],
     productionDays: 6,

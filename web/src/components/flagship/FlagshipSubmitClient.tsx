@@ -202,22 +202,22 @@ export default function FlagshipSubmitClient({
 
   return (
     <div
-      className="min-h-screen bg-[#FFFFFF] text-[#000000]"
+      className="min-h-screen overflow-x-clip bg-[#FFFFFF] text-[#000000]"
       style={{ "--flagship-accent": accent } as React.CSSProperties}
     >
       {/* Pure-White Flagship Header */}
-      <header className="border-b border-black/10 bg-[#FFFFFF] py-14 sm:py-20">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-14">
-          <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
-            <span className="inline-block h-2 w-2 bg-[var(--flagship-accent)]" />
+      <header className="border-b border-black/10 bg-[#FFFFFF] py-12 sm:py-20">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-10 lg:px-14">
+          <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.2em] text-[#666666] uppercase sm:tracking-[0.22em]">
+            <span className="inline-block h-2 w-2 shrink-0 bg-[var(--flagship-accent)]" />
             <span>CREATOR RESIDENCY · OPEN DESIGN SUBMISSIONS</span>
           </div>
 
-          <h1 className="mt-4 max-w-4xl font-syne text-5xl font-extrabold leading-[0.94] tracking-[-0.03em] text-[#000000] uppercase sm:text-7xl lg:text-[80px]">
+          <h1 className="mt-4 max-w-4xl font-syne text-[36px] font-extrabold leading-[0.94] tracking-[-0.03em] text-[#000000] uppercase break-words sm:text-6xl lg:text-[80px]">
             SUBMIT A SILHOUETTE.
           </h1>
 
-          <p className="mt-6 max-w-2xl font-sans text-sm leading-relaxed text-[#666666] sm:text-base">
+          <p className="mt-5 max-w-2xl font-sans text-sm leading-relaxed text-[#666666] sm:mt-6 sm:text-base">
             Independent designers and garment makers can pitch original pieces
             for upcoming KNITX editions. Community-selected silhouettes are
             sampled in-house, produced in numbered micro-runs, and credited by
@@ -227,8 +227,8 @@ export default function FlagshipSubmitClient({
       </header>
 
       {/* 12-Column Split: Brief + Shortlisted Ledger (Left) | Submission Form (Right) */}
-      <section className="bg-[#FFFFFF] py-14 sm:py-20">
-        <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-12 px-6 sm:px-10 lg:grid-cols-12 lg:gap-16 lg:px-14">
+      <section className="bg-[#FFFFFF] py-12 sm:py-20">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-10 px-5 sm:gap-12 sm:px-10 lg:grid-cols-12 lg:gap-16 lg:px-14">
           {/* Left Column (5 Cols): 3-Step Creator Brief + Recent Shortlisted Concepts */}
           <div className="lg:col-span-5">
             <p className="font-mono text-[10px] tracking-[0.22em] text-[#666666] uppercase">
@@ -414,7 +414,7 @@ export default function FlagshipSubmitClient({
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g. Heavyweight Slub Raw-Seam Field Jacket"
-                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-sm text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-base text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-sm"
                       />
                     </div>
 
@@ -438,7 +438,7 @@ export default function FlagshipSubmitClient({
                           value={creatorName}
                           onChange={(e) => setCreatorName(e.target.value)}
                           placeholder="Full name or studio"
-                          className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-sm text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                          className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-base text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-sm"
                         />
                       </div>
 
@@ -456,7 +456,7 @@ export default function FlagshipSubmitClient({
                           value={creatorHandle}
                           onChange={(e) => setCreatorHandle(e.target.value)}
                           placeholder="@your.studio"
-                          className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-sm text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                          className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-base text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-sm"
                         />
                       </div>
                     </div>
@@ -479,7 +479,7 @@ export default function FlagshipSubmitClient({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="studio@yourdomain.com"
-                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-sm text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-sans text-base text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-sm"
                       />
                     </div>
 
@@ -488,7 +488,7 @@ export default function FlagshipSubmitClient({
                       <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[#000000] uppercase">
                         SILHOUETTE CATEGORY
                       </p>
-                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
                         {CATEGORIES.map((option) => {
                           const selected = category === option;
                           return (
@@ -528,7 +528,7 @@ export default function FlagshipSubmitClient({
                         value={craftsmanshipNotes}
                         onChange={(e) => setCraftsmanshipNotes(e.target.value)}
                         placeholder="Specify textile weight (GSM), weave, embroidery or print method, hardware, silhouette block, and finishing..."
-                        className="mt-2.5 w-full resize-y border border-black/15 bg-[#FFFFFF] p-4 font-sans text-sm leading-relaxed text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                        className="mt-2.5 w-full resize-y border border-black/15 bg-[#FFFFFF] p-4 font-sans text-base leading-relaxed text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-sm"
                       />
                     </div>
 
@@ -550,7 +550,7 @@ export default function FlagshipSubmitClient({
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
                         placeholder="https://... or /images/..."
-                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-mono text-xs text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none"
+                        className="mt-2.5 w-full border border-black/15 bg-[#FFFFFF] px-4 py-3.5 font-mono text-base text-[#000000] placeholder:text-[#666666]/60 transition-colors focus:border-[#000000] focus:outline-none sm:text-xs"
                       />
 
                       {showImagePreview && (

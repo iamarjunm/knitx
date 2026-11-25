@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Lock, Unlock, X } from "lucide-react";
+import { ArrowRight, Lock, Unlock } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { useVault } from "@/context/VaultContext";
 import { useStorefrontConfig } from "@/context/StorefrontConfigContext";
 import {
@@ -23,46 +23,26 @@ export default function FlagshipDropsClient({
   drop: DropCampaign;
   products: Product[];
 }) {
+  const { user, setAuthModalOpen } = useAuth();
   const { config } = useStorefrontConfig();
   const {
     isVaultUnlocked,
     waitlistPass,
-    unlockVaultWithCode,
+    unlockVaultDemo,
     lockVaultPreview,
-    addToCart,
   } = useVault();
 
   const [mounted, setMounted] = useState(false);
-  const [codeInput, setCodeInput] = useState("");
-  const [codeError, setCodeError] = useState<string | null>(null);
-
   const [activeFilter, setActiveFilter] = useState<CatalogFilter>("all");
-  const [selectedProduct, setSelectedProduct] = useState<{
-    product: Product;
-    index: number;
-  } | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string>("");
-  const [bagNotice, setBagNotice] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!selectedProduct) return;
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelectedProduct(null);
-      }
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [selectedProduct]);
-
   const showUnlocked = mounted && isVaultUnlocked;
+  const showUser = mounted ? user : null;
   const showPass = mounted ? waitlistPass : null;
   const accentColor = config.accentColor || "#E11D2E";
-  const masterCode = (config.masterAccessCode || "KNITX-001").trim();
   const gridColsClass =
     config.gridColumns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
   const showAnnouncement =
@@ -79,10 +59,22 @@ export default function FlagshipDropsClient({
     () =>
       products
         .map((product, index) => ({ product, index }))
-        .filter(({ product }) => !product.isMystery)
-        .slice(0, 5),
+        .filter(({ product }) => !product.isMystery),
     [products]
   );
+
+  const revealedCount = revealedPreview.length;
+  const veiledCount = Math.max(0, products.length - revealedCount);
+  const previewThumbs = revealedPreview.slice(0, 5);
+  const useMobileSwipeStrip = previewThumbs.length >= 4;
+  const previewGridCols =
+    previewThumbs.length <= 2
+      ? "grid grid-cols-2 max-w-sm"
+      : previewThumbs.length === 3
+        ? "grid grid-cols-3 max-w-lg"
+        : previewThumbs.length === 4
+          ? "no-scrollbar -mx-4 flex flex-nowrap overflow-x-auto px-4 snap-x snap-mandatory sm:mx-auto sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 max-w-xl"
+          : "no-scrollbar -mx-4 flex flex-nowrap overflow-x-auto px-4 snap-x snap-mandatory sm:mx-auto sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0 max-w-2xl";
 
   const counts = useMemo(() => {
     const oneOfOne = products.filter((p) => p.tier === "one-of-one").length;
@@ -107,178 +99,182 @@ export default function FlagshipDropsClient({
       });
   }, [products, activeFilter]);
 
-  const handleUnlockSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setCodeError(null);
-    const ok = unlockVaultWithCode(codeInput);
-    if (!ok) {
-      setCodeError(
-        "Access code not recognized. Please verify your invitation code."
-      );
-    }
-  };
-
-  const handleQuickUnlockCode = (code: string) => {
-    setCodeInput(code);
-    setCodeError(null);
-    unlockVaultWithCode(code);
-  };
-
-  const openDetailDrawer = (product: Product, index: number) => {
-    setSelectedProduct({ product, index });
-    setSelectedSize(product.sizes[0] || "OS");
-    setBagNotice(null);
-  };
-
-  const handleAddToBag = () => {
-    if (!selectedProduct) return;
-    const sizeToUse = selectedSize || selectedProduct.product.sizes[0] || "OS";
-    const result = addToCart(selectedProduct.product, sizeToUse);
-    if (!result.ok) {
-      setBagNotice(
-        cleanFlagshipText(result.message || "Unable to reserve this garment.")
-      );
-      return;
-    }
-    setBagNotice(null);
-    setSelectedProduct(null);
-  };
-
   // =========================================================================
-  // LOCKED STATE: ULTRA-CLEAN PRIVATE DROP ACCESS GATE
+  // LOCKED STATE: ULTRA-CLEAN ACCOUNT-BASED PRIVATE DROP ACCESS GATE
   // =========================================================================
   if (!showUnlocked) {
+    const memberEmail = showUser?.email || showPass?.email || "";
+    const isQueuedOrSignedIn = Boolean(showUser || showPass);
+
     return (
-      <section className="flex min-h-[calc(100svh-3.75rem)] flex-col justify-center bg-white px-4 py-14 text-black sm:px-8">
+      <section className="flex min-h-[calc(100svh-3.75rem)] flex-col justify-center bg-white px-4 py-10 text-black sm:px-8 sm:py-14">
         <div className="mx-auto w-full max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[#666666]">
+          <div className="inline-flex items-center justify-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666] sm:tracking-[0.22em]">
             <span
               aria-hidden="true"
               style={{ backgroundColor: accentColor }}
               className="h-2 w-2 shrink-0"
             />
-            <span>{editionLabel} · INVITATION ONLY</span>
+            <span>{editionLabel} · ACCOUNT-BASED PRIVATE ACCESS</span>
           </div>
 
-          <h1 className="mt-4 font-poster text-5xl leading-[0.9] tracking-[0.01em] text-black uppercase sm:text-7xl">
+          <h1 className="mt-4 font-poster text-4xl leading-[0.92] tracking-[0.01em] text-black uppercase break-words sm:text-6xl lg:text-7xl">
             {editionLabel} — PRIVATE ACCESS
           </h1>
 
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-[#666666]">
-            Enter your personal drop code to unveil all {products.length}{" "}
-            numbered silhouettes and reserve your size before the edition
-            closes.
+          <p className="mx-auto mt-3.5 max-w-lg text-sm leading-relaxed text-[#666666] sm:mt-4">
+            Selected pieces are previewed publicly. Remaining silhouettes unlock
+            automatically once your account receives access.
           </p>
 
-          {/* 5 Live Revealed Preview Thumbnails */}
-          {revealedPreview.length > 0 ? (
-            <div className="mx-auto my-9 grid max-w-2xl grid-cols-5 gap-2 sm:gap-3">
-              {revealedPreview.map(({ product, index }) => (
-                <div key={product._id} className="space-y-1.5 text-left">
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#666666] sm:tracking-[0.18em]">
+            {products.length} PIECES · {revealedCount} PREVIEWED · {veiledCount}{" "}
+            VEILED
+          </p>
+
+          {/* Publicly Previewed Product Thumbnails (3-up horizontal swipe rail on phones) */}
+          {previewThumbs.length > 0 ? (
+            <div
+              className={cn(
+                "mx-auto my-7 gap-2.5 sm:my-9 sm:gap-3",
+                previewGridCols
+              )}
+            >
+              {previewThumbs.map(({ product, index }) => (
+                <Link
+                  key={product._id}
+                  href={`/product/${product.slug}`}
+                  className={cn(
+                    "group space-y-1.5 text-left",
+                    useMobileSwipeStrip
+                      ? "w-[31%] min-w-[104px] shrink-0 snap-start sm:w-auto sm:min-w-0"
+                      : ""
+                  )}
+                >
                   <div className="aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
                     <img
                       src={getFlagshipProductImage(product, index, false)}
                       alt={cleanFlagshipText(product.title)}
-                      className="h-full w-full object-cover object-center"
+                      className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                     />
                   </div>
-                  <p className="truncate font-mono text-[9px] uppercase tracking-[0.12em] text-[#666666]">
+                  <p className="truncate font-mono text-[9px] uppercase tracking-[0.12em] text-[#666666] transition-colors group-hover:text-black">
                     {product.serialCode}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           ) : null}
 
-          {/* Crisp Bordered Black Access Gate Form */}
-          <form
-            onSubmit={handleUnlockSubmit}
-            className="mx-auto flex max-w-lg flex-col gap-3 sm:flex-row"
-          >
-            <input
-              suppressHydrationWarning
-              type="text"
-              value={codeInput}
-              onChange={(e) => {
-                setCodeInput(e.target.value);
-                if (codeError) setCodeError(null);
-              }}
-              placeholder="ENTER ACCESS CODE"
-              aria-label="Enter access code"
-              className="h-13 flex-1 border border-black bg-white px-4 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-black placeholder:text-neutral-400 focus:outline-none"
-            />
-            <button
-              suppressHydrationWarning
-              type="submit"
-              className="h-13 shrink-0 cursor-pointer bg-black px-8 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-85"
-            >
-              ENTER DROP
-            </button>
-          </form>
+          {/* Account-Based Private Access Gate */}
+          {!isQueuedOrSignedIn ? (
+            <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+              <button
+                suppressHydrationWarning
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                className="min-h-[48px] flex-1 cursor-pointer bg-black px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85 sm:h-13 sm:px-7 sm:tracking-[0.2em]"
+              >
+                SIGN IN TO CHECK ACCESS
+              </button>
+              <Link
+                href="/#waitlist"
+                className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 border border-black bg-white px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-black hover:text-white sm:h-13 sm:px-7 sm:tracking-[0.2em]"
+              >
+                <span>JOIN THE WAITLIST</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-lg border border-black/15 bg-[#F4F4F5] p-5 text-left sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3.5">
+                <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-black">
+                  <span
+                    aria-hidden="true"
+                    style={{ backgroundColor: accentColor }}
+                    className="h-2 w-2 shrink-0"
+                  />
+                  <span>ACCOUNT QUEUED</span>
+                </div>
+                {showPass ? (
+                  <span className="font-mono text-xs font-bold tracking-[0.14em] text-black">
+                    #{String(showPass.position).padStart(4, "0")}
+                  </span>
+                ) : null}
+              </div>
 
-          {codeError ? (
-            <p
-              style={{ color: accentColor }}
-              className="mt-3 font-mono text-xs"
-            >
-              {codeError}
-            </p>
-          ) : null}
+              {memberEmail ? (
+                <p className="mt-3.5 break-all font-mono text-xs font-semibold text-black">
+                  {memberEmail}
+                </p>
+              ) : null}
 
-          {/* Helper Links & Preview Access */}
+              <p className="mt-2 text-sm leading-relaxed text-[#666666]">
+                Your account is on the waitlist. As soon as your account is
+                granted access, this drop unlocks automatically—no access code
+                required.
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                {!showUser ? (
+                  <button
+                    suppressHydrationWarning
+                    type="button"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="cursor-pointer font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black underline underline-offset-4 transition-opacity hover:opacity-70"
+                  >
+                    SIGN IN TO SYNC ACCOUNT
+                  </button>
+                ) : !showPass ? (
+                  <Link
+                    href="/#waitlist"
+                    className="inline-flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black underline underline-offset-4 transition-opacity hover:opacity-70"
+                  >
+                    <span>JOIN THE WAITLIST</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          {/* Subtle Navigation Links */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#666666]">
+            {config.coreEnabled ? (
+              <Link
+                href="/core"
+                className="inline-flex items-center gap-1 transition-colors hover:text-black"
+              >
+                <span>CORE WARDROBE</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            ) : null}
+
+            {config.coreEnabled ? (
+              <span aria-hidden="true" className="text-neutral-300">
+                ·
+              </span>
+            ) : null}
+
+            <Link
+              href="/archive"
+              className="inline-flex items-center gap-1 transition-colors hover:text-black"
+            >
+              <span>EDITIONS ARCHIVE</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          {/* Whisper-Quiet Founder / Demo Local Preview Trigger */}
+          <div className="mt-10 border-t border-black/10 pt-5">
             <button
               suppressHydrationWarning
               type="button"
-              onClick={() => handleQuickUnlockCode(masterCode)}
-              className="cursor-pointer text-black underline underline-offset-4 transition-opacity hover:opacity-65"
+              onClick={() => unlockVaultDemo()}
+              className="cursor-pointer font-mono text-[10px] tracking-[0.14em] text-neutral-400 underline-offset-4 transition-colors hover:text-black hover:underline"
             >
-              PREVIEW CODE: {masterCode}
+              Preview Unlocked Drop
             </button>
-
-            {showPass?.accessCode ? (
-              <>
-                <span aria-hidden="true" className="text-neutral-300">
-                  ·
-                </span>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickUnlockCode(showPass.accessCode)}
-                  style={{ color: accentColor }}
-                  className="cursor-pointer underline underline-offset-4"
-                >
-                  USE PASS: {showPass.accessCode}
-                </button>
-              </>
-            ) : null}
-
-            <span aria-hidden="true" className="text-neutral-300">
-              ·
-            </span>
-
-            <Link
-              href="/#waitlist"
-              className="inline-flex items-center gap-1 transition-colors hover:text-black"
-            >
-              <span>JOIN WAITLIST</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-
-            {config.coreEnabled ? (
-              <>
-                <span aria-hidden="true" className="text-neutral-300">
-                  ·
-                </span>
-                <Link
-                  href="/core"
-                  className="inline-flex items-center gap-1 transition-colors hover:text-black"
-                >
-                  <span>CORE WARDROBE</span>
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
-              </>
-            ) : null}
           </div>
         </div>
       </section>
@@ -291,29 +287,29 @@ export default function FlagshipDropsClient({
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Crisp Drop Catalog Header */}
-      <section className="border-b border-black/10 bg-white px-4 py-10 sm:px-8 sm:py-14">
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="border-b border-black/10 bg-white px-4 py-8 sm:px-8 sm:py-14">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-5 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[#666666]">
-              <Unlock style={{ color: accentColor }} className="h-3 w-3" />
+            <div className="inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#666666] sm:tracking-[0.22em]">
+              <Unlock style={{ color: accentColor }} className="h-3 w-3 shrink-0" />
               <span>{editionLabel} · PRIVATE ACCESS ACTIVE</span>
             </div>
-            <h1 className="mt-2 font-poster text-4xl leading-[0.92] tracking-[0.01em] text-black uppercase sm:text-6xl">
+            <h1 className="mt-2 font-poster text-4xl leading-[0.92] tracking-[0.01em] text-black uppercase break-words sm:text-6xl">
               {cleanTitle}
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link
               href="/archive"
-              className="inline-flex items-center gap-2 border border-black/20 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:border-black"
+              className="inline-flex min-h-[40px] items-center gap-2 border border-black/20 px-4 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:border-black sm:px-5 sm:py-2.5"
             >
               <span>ARCHIVE</span>
             </Link>
             {config.coreEnabled ? (
               <Link
                 href="/core"
-                className="inline-flex items-center gap-2 border border-black/20 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:border-black"
+                className="inline-flex min-h-[40px] items-center gap-2 border border-black/20 px-4 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-black transition-colors hover:border-black sm:px-5 sm:py-2.5"
               >
                 <span>CORE WARDROBE</span>
               </Link>
@@ -322,7 +318,7 @@ export default function FlagshipDropsClient({
               suppressHydrationWarning
               type="button"
               onClick={() => lockVaultPreview()}
-              className="inline-flex cursor-pointer items-center gap-2 border border-black bg-black px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-85"
+              className="inline-flex min-h-[40px] cursor-pointer items-center gap-2 border border-black bg-black px-4 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-85 sm:px-5 sm:py-2.5"
             >
               <Lock className="h-3 w-3" />
               <span>LOCK ACCESS</span>
@@ -338,8 +334,8 @@ export default function FlagshipDropsClient({
           showAnnouncement ? "top-[92px]" : "top-[60px]"
         )}
       >
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-8">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 py-3 sm:px-8 sm:py-3.5">
+          <div className="no-scrollbar flex w-full flex-nowrap items-center gap-2 overflow-x-auto px-4 sm:w-auto sm:px-0">
             {(
               [
                 { id: "all", label: `ALL (${counts.all})` },
@@ -359,7 +355,7 @@ export default function FlagshipDropsClient({
                   type="button"
                   onClick={() => setActiveFilter(filter.id)}
                   className={cn(
-                    "cursor-pointer px-3.5 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    "min-h-[36px] shrink-0 cursor-pointer whitespace-nowrap px-3.5 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.16em] transition-colors",
                     active
                       ? "bg-black text-white"
                       : "bg-[#F4F4F5] text-[#666666] hover:bg-neutral-200 hover:text-black"
@@ -371,17 +367,17 @@ export default function FlagshipDropsClient({
             })}
           </div>
 
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-[#666666] sm:inline">
+          <span className="hidden shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-[#666666] sm:inline">
             {filteredProducts.length} PIECES SHOWN · ZERO RESTOCKS
           </span>
         </div>
       </div>
 
       {/* Edge-to-Edge Shoppable Grid (3 or 4 columns per Admin Config) */}
-      <section className="mx-auto max-w-[1600px] px-4 py-10 sm:px-8 sm:py-14">
+      <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-8 sm:py-14">
         <div
           className={cn(
-            "grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 sm:gap-y-12",
+            "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12",
             gridColsClass
           )}
         >
@@ -391,260 +387,67 @@ export default function FlagshipDropsClient({
 
             return (
               <article key={product._id} className="group flex flex-col">
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => openDetailDrawer(product, index)}
-                  className="relative aspect-[3/4] w-full cursor-pointer overflow-hidden bg-[#F4F4F5] text-left focus:outline-none"
+                <Link
+                  href={`/product/${product.slug}`}
+                  className="flex flex-col text-left focus:outline-none"
                 >
-                  <img
-                    src={imgSrc}
-                    alt={title}
-                    className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                  />
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F4F4F5]">
+                    <img
+                      src={imgSrc}
+                      alt={title}
+                      className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                    />
 
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                    {product.tier === "one-of-one" ? (
-                      <span
-                        style={{ backgroundColor: accentColor }}
-                        className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white"
-                      >
-                        1 OF 1
-                      </span>
-                    ) : null}
-                    {product.isMystery ? (
-                      <span className="bg-black px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-white">
-                        UNVEILED
-                      </span>
-                    ) : null}
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 sm:top-3 sm:left-3 sm:gap-1.5">
+                      {product.tier === "one-of-one" ? (
+                        <span
+                          style={{ backgroundColor: accentColor }}
+                          className="px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-white sm:px-2 sm:tracking-[0.16em]"
+                        >
+                          1 OF 1
+                        </span>
+                      ) : null}
+                      {product.isMystery ? (
+                        <span className="bg-black px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white sm:px-2 sm:tracking-[0.16em]">
+                          UNVEILED
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Desktop Hover Bar */}
+                    <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
+                      VIEW PRODUCT · SELECT SIZE
+                    </div>
                   </div>
 
-                  {/* Desktop Hover Quick-Shop Bar */}
-                  <div className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-black/90 px-3 py-2.5 text-center font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-transform duration-200 group-hover:translate-y-0 sm:block">
-                    SELECT SIZE · QUICK SHOP
-                  </div>
-                </button>
-
-                <div className="mt-3 space-y-1">
-                  <h2 className="truncate font-sans text-xs font-semibold uppercase tracking-[0.04em] text-black">
-                    {title}
-                  </h2>
-                  <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-[#666666]">
-                    <span className="font-medium text-black">
-                      {formatInr(product.priceInr)}
-                    </span>
-                    {product.tier === "one-of-one" ? (
-                      <span
-                        style={{ color: accentColor }}
-                        className="font-semibold"
-                      >
-                        {product.remainingUnits > 0 ? "1 OF 1" : "CLAIMED"}
+                  <div className="mt-2.5 space-y-1 sm:mt-3">
+                    <h2 className="truncate font-sans text-[11px] font-semibold uppercase tracking-[0.03em] text-black sm:text-xs sm:tracking-[0.04em]">
+                      {title}
+                    </h2>
+                    <div className="flex items-center justify-between gap-1.5 font-mono text-[10px] text-[#666666] sm:gap-2 sm:text-[11px]">
+                      <span className="shrink-0 font-medium text-black tabular-nums">
+                        {formatInr(product.priceInr)}
                       </span>
-                    ) : (
-                      <span>
-                        {product.remainingUnits}/{product.totalUnits} LEFT
-                      </span>
-                    )}
+                      {product.tier === "one-of-one" ? (
+                        <span
+                          style={{ color: accentColor }}
+                          className="shrink-0 whitespace-nowrap font-semibold"
+                        >
+                          {product.remainingUnits > 0 ? "1 OF 1" : "CLAIMED"}
+                        </span>
+                      ) : (
+                        <span className="shrink-0 whitespace-nowrap">
+                          {product.remainingUnits}/{product.totalUnits} LEFT
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </Link>
               </article>
             );
           })}
         </div>
       </section>
-
-      {/* Full-Height Pure-White Product Detail Slide-Over */}
-      <AnimatePresence>
-        {selectedProduct ? (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setSelectedProduct(null)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
-            />
-
-            <motion.aside
-              role="dialog"
-              aria-modal="true"
-              aria-label={cleanFlagshipText(selectedProduct.product.title)}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 flex h-full w-full max-w-lg flex-col overflow-y-auto bg-white text-black"
-            >
-              {/* Slide-Over Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white/95 px-6 py-4 backdrop-blur-md">
-                <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    {selectedProduct.product.serialCode}
-                  </span>
-                  {selectedProduct.product.tier === "one-of-one" ? (
-                    <span
-                      style={{ backgroundColor: accentColor }}
-                      className="px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white"
-                    >
-                      1 OF 1
-                    </span>
-                  ) : (
-                    <span className="bg-[#F4F4F5] px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-700">
-                      SMALL BATCH
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => setSelectedProduct(null)}
-                  aria-label="Close product details"
-                  className="cursor-pointer p-1 text-black transition-opacity hover:opacity-60"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Studio Image */}
-              <div className="aspect-[4/5] w-full shrink-0 overflow-hidden bg-[#F4F4F5]">
-                <img
-                  src={getFlagshipProductImage(
-                    selectedProduct.product,
-                    selectedProduct.index,
-                    true
-                  )}
-                  alt={cleanFlagshipText(selectedProduct.product.title)}
-                  className="h-full w-full object-cover object-center"
-                />
-              </div>
-
-              {/* Details & Size Selector */}
-              <div className="flex flex-1 flex-col gap-6 p-6">
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <h2 className="font-syne text-xl font-extrabold uppercase tracking-[-0.01em] text-black">
-                      {cleanFlagshipText(selectedProduct.product.title)}
-                    </h2>
-                    <span className="shrink-0 font-mono text-base font-semibold text-black">
-                      {formatInr(selectedProduct.product.priceInr)}
-                    </span>
-                  </div>
-
-                  {selectedProduct.product.creatorCredit ? (
-                    <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#666666]">
-                      DESIGN CREDIT ·{" "}
-                      {cleanFlagshipText(selectedProduct.product.creatorCredit)}
-                    </p>
-                  ) : null}
-
-                  <p className="mt-3 text-sm leading-relaxed text-[#666666]">
-                    {cleanFlagshipText(selectedProduct.product.description)}
-                  </p>
-                </div>
-
-                {/* Spec Strip */}
-                <div className="grid grid-cols-3 gap-3 border-y border-black/10 py-4 font-mono text-[10px] uppercase tracking-[0.14em]">
-                  <div>
-                    <span className="block text-[#666666]">WEIGHT</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.gsmWeight}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[#666666]">AVAILABILITY</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.remainingUnits} OF{" "}
-                      {selectedProduct.product.totalUnits} LEFT
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[#666666]">LEAD TIME</span>
-                    <span className="mt-1 block font-semibold text-black">
-                      {selectedProduct.product.productionDays} DAYS
-                    </span>
-                  </div>
-                </div>
-
-                {/* Fabrication & Craftsmanship */}
-                <div>
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    FABRIC &amp; FINISH
-                  </span>
-                  <p className="mt-1 text-xs font-semibold text-black">
-                    {cleanFlagshipText(selectedProduct.product.fabric)}
-                  </p>
-                  {selectedProduct.product.craftsmanship.length > 0 ? (
-                    <ul className="mt-2.5 flex flex-wrap gap-1.5">
-                      {selectedProduct.product.craftsmanship.map((item) => (
-                        <li
-                          key={item}
-                          className="bg-[#F4F4F5] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-700"
-                        >
-                          {cleanFlagshipText(item)}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-
-                {/* Size Boxes */}
-                <div>
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#666666]">
-                    SELECT SIZE
-                  </span>
-                  <div className="mt-2.5 grid grid-cols-4 gap-2">
-                    {selectedProduct.product.sizes.map((size) => {
-                      const active = selectedSize === size;
-                      return (
-                        <button
-                          suppressHydrationWarning
-                          key={size}
-                          type="button"
-                          onClick={() => setSelectedSize(size)}
-                          className={cn(
-                            "h-11 cursor-pointer border font-mono text-xs font-semibold uppercase transition-colors",
-                            active
-                              ? "border-black bg-black text-white"
-                              : "border-black/20 bg-white text-black hover:border-black"
-                          )}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {bagNotice ? (
-                  <p
-                    style={{ color: accentColor }}
-                    className="font-mono text-xs"
-                  >
-                    {bagNotice}
-                  </p>
-                ) : null}
-
-                {/* Add to Bag Button */}
-                <div className="mt-auto pt-2">
-                  <button
-                    suppressHydrationWarning
-                    type="button"
-                    onClick={handleAddToBag}
-                    disabled={selectedProduct.product.remainingUnits <= 0}
-                    className="w-full cursor-pointer bg-black py-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:bg-neutral-300"
-                  >
-                    {selectedProduct.product.remainingUnits <= 0
-                      ? "SOLD OUT"
-                      : `ADD TO BAG — ${formatInr(selectedProduct.product.priceInr)}`}
-                  </button>
-                </div>
-              </div>
-            </motion.aside>
-          </div>
-        ) : null}
-      </AnimatePresence>
     </div>
   );
 }

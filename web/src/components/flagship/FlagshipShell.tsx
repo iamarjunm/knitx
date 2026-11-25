@@ -132,7 +132,7 @@ export default function FlagshipShell({
     : null;
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-black selection:text-white">
+    <div className="min-h-screen overflow-x-clip bg-white text-black selection:bg-black selection:text-white">
       {/* Optional Live 32px Jet-Black Top Announcement Strip */}
       {showAnnouncement ? (
         <div
@@ -222,7 +222,7 @@ export default function FlagshipShell({
           </nav>
 
           {/* Right: Account, Bag & Mobile Trigger */}
-          <div className="flex items-center gap-5 sm:gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             {showUser ? (
               <div className="hidden items-center gap-2.5 sm:flex">
                 <span className="max-w-[104px] truncate font-sans text-[11px] font-semibold uppercase tracking-[0.16em]">
@@ -270,7 +270,7 @@ export default function FlagshipShell({
               onClick={() => setCartOpen(true)}
               aria-label={`Open shopping bag with ${showCartCount} items`}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-1 font-sans text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
+                "inline-flex min-h-[40px] cursor-pointer items-center gap-1 px-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors sm:px-0",
                 isTransparent
                   ? "text-white hover:text-white/75"
                   : "text-black hover:text-[#666666]"
@@ -296,7 +296,7 @@ export default function FlagshipShell({
               }
               aria-expanded={drawerOpen}
               className={cn(
-                "inline-flex cursor-pointer items-center justify-center p-1 transition-colors md:hidden",
+                "-mr-2 inline-flex min-h-[40px] min-w-[40px] cursor-pointer items-center justify-center transition-colors md:hidden",
                 isTransparent
                   ? "text-white hover:text-white/75"
                   : "text-black hover:text-[#666666]"
@@ -331,14 +331,14 @@ export default function FlagshipShell({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="relative ml-auto flex h-full w-full max-w-sm flex-col justify-between bg-white px-6 py-5 text-black"
+              className="relative ml-auto flex h-full w-full max-w-sm flex-col justify-between gap-8 overflow-y-auto bg-white px-5 py-5 text-black sm:px-6"
             >
               <div>
-                <div className="flex h-10 items-center justify-between border-b border-black/10 pb-4">
+                <div className="flex min-h-[44px] shrink-0 items-center justify-between border-b border-black/10 pb-3">
                   <Link
                     href="/"
                     onClick={() => setDrawerOpen(false)}
-                    className="inline-flex items-center gap-2.5 text-black"
+                    className="inline-flex min-h-[40px] items-center gap-2.5 text-black"
                   >
                     <span
                       aria-hidden="true"
@@ -354,13 +354,13 @@ export default function FlagshipShell({
                     type="button"
                     onClick={() => setDrawerOpen(false)}
                     aria-label="Close navigation menu"
-                    className="cursor-pointer p-1 text-black transition-colors hover:text-[#666666]"
+                    className="-mr-2 inline-flex min-h-[40px] min-w-[40px] cursor-pointer items-center justify-center text-black transition-colors hover:text-[#666666]"
                   >
                     <X className="h-5 w-5 stroke-[1.75]" />
                   </button>
                 </div>
 
-                <nav className="mt-6 divide-y divide-black/10 border-y border-black/10">
+                <nav className="mt-5 divide-y divide-black/10 border-y border-black/10">
                   {navItems.map((item) => {
                     const isActive =
                       pathname === item.href ||
@@ -370,7 +370,7 @@ export default function FlagshipShell({
                         key={item.href}
                         href={item.href}
                         onClick={() => setDrawerOpen(false)}
-                        className="flex items-center justify-between py-4 transition-colors hover:opacity-75"
+                        className="flex min-h-[52px] items-center justify-between py-3.5 transition-colors hover:opacity-75 sm:py-4"
                       >
                         <div className="flex items-baseline gap-4">
                           <span className="font-mono text-[10px] tracking-[0.18em] text-[#666666]">
@@ -392,10 +392,10 @@ export default function FlagshipShell({
                 </nav>
               </div>
 
-              <div className="space-y-4 border-t border-black/10 pt-5">
+              <div className="shrink-0 space-y-4 border-t border-black/10 pt-5 pb-2">
                 {showUser ? (
-                  <div className="flex items-center justify-between">
-                    <span className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="truncate font-sans text-xs font-semibold uppercase tracking-[0.14em] text-black">
                       {showUser.displayName}
                     </span>
                     <button
@@ -406,7 +406,7 @@ export default function FlagshipShell({
                         setDrawerOpen(false);
                       }}
                       style={{ color: accentColor }}
-                      className="cursor-pointer font-sans text-[11px] font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
+                      className="inline-flex min-h-[40px] shrink-0 cursor-pointer items-center font-sans text-[11px] font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
                     >
                       SIGN OUT
                     </button>
@@ -419,13 +419,13 @@ export default function FlagshipShell({
                       setDrawerOpen(false);
                       setAuthModalOpen(true);
                     }}
-                    className="w-full cursor-pointer bg-black py-3.5 text-center font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85"
+                    className="min-h-[46px] w-full cursor-pointer bg-black py-3.5 text-center font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-85"
                   >
                     SIGN IN / ACCOUNT
                   </button>
                 )}
 
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#666666]">
+                <p className="font-mono text-[10px] leading-relaxed uppercase tracking-[0.18em] text-[#666666]">
                   {config.footerTagline}
                 </p>
               </div>
@@ -445,9 +445,9 @@ export default function FlagshipShell({
 
       {/* Minimalist Gallery Flagship Footer */}
       <footer className="border-t border-black/10 bg-white text-black">
-        <div className="mx-auto max-w-[1600px] px-4 pt-16 pb-20 sm:px-8">
+        <div className="mx-auto max-w-[1600px] px-4 pt-12 pb-16 sm:px-8 sm:pt-16 sm:pb-20">
           {/* Clean 4-Column SSENSE / Acne-Style Grid */}
-          <div className="grid grid-cols-2 gap-10 border-b border-black/10 pb-14 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-9 border-b border-black/10 pb-12 sm:gap-10 sm:pb-14 lg:grid-cols-4">
             <div className="col-span-2 lg:col-span-1">
               <div className="inline-flex items-center gap-2">
                 <span
@@ -460,9 +460,9 @@ export default function FlagshipShell({
                 </span>
               </div>
               <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-[#666666]">
-                Limited-run Indian streetwear. 1–4 numbered units per
-                silhouette, cut to order with zero deadstock alongside the
-                heavyweight Core wardrobe.
+                Limited-run Indian streetwear. Curated limited-edition runs,
+                cut to order with zero deadstock alongside the heavyweight
+                Core wardrobe.
               </p>
             </div>
 
@@ -559,20 +559,20 @@ export default function FlagshipShell({
           </div>
 
           {/* Monumental V11-Style Solid Black Edge-to-Edge Wordmark */}
-          <div className="pt-10">
+          <div className="pt-8 sm:pt-10">
             <Link
               href="/"
               aria-label={`${brandName} Flagship Home`}
               className="block overflow-hidden"
             >
-              <span className="block w-full select-none font-syne text-[clamp(4.25rem,17.5vw,15rem)] font-extrabold uppercase leading-[0.82] tracking-[-0.04em] text-black">
+              <span className="block w-full select-none font-syne text-[clamp(3.6rem,18vw,15rem)] font-extrabold uppercase leading-[0.82] tracking-[-0.04em] text-black">
                 {brandName}
               </span>
             </Link>
 
-            <div className="mt-8 flex flex-col gap-3 border-t border-black/10 pt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[#666666] sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-7 flex flex-col gap-3 border-t border-black/10 pt-6 font-mono text-[10px] leading-relaxed uppercase tracking-[0.18em] text-[#666666] sm:mt-8 sm:flex-row sm:items-center sm:justify-between sm:tracking-[0.2em]">
               <span>{config.footerTagline}</span>
-              <div className="flex items-center gap-5">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                 <span>© 2026 {brandName}</span>
                 <span aria-hidden="true" className="text-black/20">
                   ·
