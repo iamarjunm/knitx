@@ -252,7 +252,7 @@ export default function FlagshipHomeClient({
         {/* Seamless Top & Bottom Cinematic Gradient Vignettes (Navbar melts into Hero) */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/65 via-black/25 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/50 via-black/15 to-transparent"
         />
         <div
           aria-hidden="true"

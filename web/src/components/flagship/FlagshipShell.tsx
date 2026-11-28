@@ -44,7 +44,12 @@ export default function FlagshipShell({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const bypassChrome = isChromeBypassPath(pathname);
-  const isHome = !pathname || pathname === "/";
+  const normalizedPath =
+    (pathname || "/").split("?")[0].replace(/\/+$/, "") || "/";
+  const isHome =
+    normalizedPath === "/" ||
+    normalizedPath === "/index" ||
+    normalizedPath === "/index.html";
 
   useEffect(() => {
     setMounted(true);
@@ -174,7 +179,7 @@ export default function FlagshipShell({
           "fixed inset-x-0 z-40 h-[60px] transition-[background-color,border-color,color,backdrop-filter] duration-300",
           showAnnouncement ? "top-8" : "top-0",
           isTransparent
-            ? "border-b border-transparent bg-gradient-to-b from-black/65 via-black/25 to-transparent text-white"
+            ? "border-b border-transparent bg-gradient-to-b from-black/45 via-black/15 to-transparent text-white"
             : "border-b border-black/10 bg-white/95 text-black backdrop-blur-md"
         )}
       >
@@ -469,13 +474,16 @@ export default function FlagshipShell({
         ) : null}
       </AnimatePresence>
 
+      {/* Top Offset Spacer for Non-Home Routes Only (Prevents React 19 Stale pt-[60px] Hydration Bug) */}
+      {!isHome ? (
+        <div
+          aria-hidden="true"
+          className={showAnnouncement ? "h-[92px]" : "h-[60px]"}
+        />
+      ) : null}
+
       {/* Main Content Canvas */}
-      <main
-        className={cn(
-          "overflow-x-clip",
-          isHome ? "" : showAnnouncement ? "pt-[92px]" : "pt-[60px]"
-        )}
-      >
+      <main className="overflow-x-clip pt-0" style={{ paddingTop: 0 }}>
         {children}
       </main>
 
